@@ -101,15 +101,15 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        name = data.get("name","").strip()
-        chinese_name = data.get("chinese_name","").strip()
-        gender = data.get("gender","").strip()
-        country = data.get("country","").strip()
-        phone = data.get("phone","").strip()
-        email = data.get("email","").strip()
-        referrer = data.get("referrer","").strip()
+        name = data.get("name", "").strip()
+        chinese_name = data.get("chinese_name", "").strip()
+        gender = data.get("gender", "").strip()
+        country = data.get("country", "").strip()
+        phone = data.get("phone", "").strip()
+        email = data.get("email", "").strip()
+        referrer = data.get("referrer", "").strip()
         month_str = data.get("dob_month")
-        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str," %B").month
+        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str, "%B").month
         birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
@@ -118,4 +118,41 @@ def analyze_name():
         summary_ps = generate_child_summary(age, gender, country, metrics)
         summary_html = generate_summary_html(summary_ps)
         charts_html = generate_email_charts(metrics)
-        email_html = f"<html><body style='font-family:sans-serif;color:#333'><h2>🎯 新提交记录：</h2><p>👤 <strong>姓名：</strong>{name}<br>...
+        email_html_result = build_email_report(summary_html, charts_html)
+
+        email_html = f"""
+        <html>
+          <body style='font-family:sans-serif; color:#333'>
+            <h2>🎯 新提交记录：</h2>
+            <p>
+              👤 <strong>姓名：</strong> {name}<br>
+              🈶 <strong>中文名：</strong> {chinese_name}<br>
+              ⚧️ <strong>性别：</strong> {gender}<br>
+              🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
+              🕑 <strong>年龄：</strong> {age}<br>
+              🌍 <strong>国家：</strong> {country}<br>
+              📞 <strong>电话：</strong> {phone}<br>
+              📧 <strong>邮箱：</strong> {email}<br>
+              💬 <strong>推荐人：</strong> {referrer}
+            </p>
+            <hr>
+            <h2>📊 AI 分析报告</h2>
+            {email_html_result}
+          </body>
+        </html>
+        """
+
+        send_email(email_html)
+
+        display_footer = build_email_report("", "")
+        return jsonify({
+            "metrics": metrics,
+            "analysis": summary_html + display_footer
+        })
+
+    except Exception as e:
+        logging.exception("❌ Error in /analyze_name")
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0")
