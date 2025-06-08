@@ -51,10 +51,10 @@ def generate_child_metrics():
 
 def generate_child_summary(age, gender, country, metrics):
     return [
-        f"在{country}，许多约{age}岁的{gender}孩子正在踏上他们独特的学习之旅。其中，视觉学习者占比约{metrics[0]['values'][0]}%，听觉型为{metrics[0]['values'][1]}%，动觉型则为{metrics[0]['values'][2]}%。这些比例揭示了孩子们如何通过图像、声音或实践来理解世界。适时提供丰富视觉或声音引导，将大大激发他们的学习动力。",
-        f"从日常习惯看，{metrics[1]['values'][0]}%的孩子养成了每日复习的好习惯，展现出良好的自律能力；{metrics[1]['values'][2]}%孩子具备独立学习的动力，这是内在驱动的重要信号。相比之下，仅有{metrics[1]['values'][1]}%参与小组互动，或许他们更倾向安静、个人化的学习环境。家长不妨从亲子共读、家庭故事分享等温馨方式入手，温和地引导社交融合。",
-        f"在学术表现方面，孩子在数学上的信心达到了{metrics[2]['values'][0]}%，阅读为{metrics[2]['values'][1]}%，专注力为{metrics[2]['values'][2]}%。若发现注意力稍显不足，可通过每日固定节奏、背景音乐或短时专注法，帮助他们建立可持续的学习节奏，找到适合自己的专注之道。",
-        "整体而言，这些学习数据不仅是数字，更是孩子成长节奏的真实写照。他们正在默默努力、等待被理解。在新加坡、马来西亚与台湾，若能结合孩子偏好设计教材内容，并平衡学术与情绪成长，将能帮助他们建立更深层次的信心与归属感。"
+        f"在{country}，许多约{age}岁的{gender}孩子正在安静地探索学习之旅。视觉学习占比约{metrics[0]['values'][0]}%，听觉学习{metrics[0]['values'][1]}%，动觉方式{metrics[0]['values'][2]}%。这些数字不仅是统计，更是孩子探索世界的方式。看到生动画面或故事时，他们的好奇心更容易被激发。",
+        f"深入来看，{metrics[1]['values'][0]}%的孩子每天复习，体现出良好的纪律性。{metrics[1]['values'][2]}%孩子能独立学习，显示内在动力。然而，仅{metrics[1]['values'][1]}%参与小组学习，或许表明他们更倾向安静环境。家长可考虑亲子复习或小型故事会等温馨开启小组互动。",
+        f"在核心学科方面，数学约{metrics[2]['values'][0]}%，阅读{metrics[2]['values'][1]}%，专注力{metrics[2]['values'][2]}%。虽然专注力稍弱，但可以通过规律、音乐或休息引导，让孩子在学习中找到自己的节奏。",
+        "这些学习信号不仅是快照，更是一个故事：孩子在努力，需要被看见和被懂。新加坡、马来西亚和台湾的父母和教育者可以根据视觉偏好调整资源，选择同时重视情感成长与学术表现的教育方式，帮孩子获得平衡与自信。"
     ]
 
 def generate_summary_html(paragraphs):
@@ -101,15 +101,15 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        name = data.get("name", "").strip()
-        chinese_name = data.get("chinese_name", "").strip()
-        gender = data.get("gender", "").strip()
-        country = data.get("country", "").strip()
-        phone = data.get("phone", "").strip()
-        email = data.get("email", "").strip()
-        referrer = data.get("referrer", "").strip()
+        name = data.get("name","").strip()
+        chinese_name = data.get("chinese_name","").strip()
+        gender = data.get("gender","").strip()
+        country = data.get("country","").strip()
+        phone = data.get("phone","").strip()
+        email = data.get("email","").strip()
+        referrer = data.get("referrer","").strip()
         month_str = data.get("dob_month")
-        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str, "%B").month
+        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str," %B").month
         birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
@@ -118,10 +118,4 @@ def analyze_name():
         summary_ps = generate_child_summary(age, gender, country, metrics)
         summary_html = generate_summary_html(summary_ps)
         charts_html = generate_email_charts(metrics)
-        email_html = f"<html><body style='font-family:sans-serif;color:#333'><h2>🎯 新提交记录：</h2><p>👤 <strong>姓名：</strong>{name}<br>📞 <strong>电话：</strong>{phone}<br>📧 <strong>电邮：</strong>{email}</p>{build_email_report(summary_html, charts_html)}</body></html>"
-
-        send_email(email_html)
-        return jsonify({"summary": summary_html})
-    except Exception as e:
-        logging.error("❌ 分析过程中出错", exc_info=True)
-        return jsonify({"error": "⚠️ 网络错误或服务器无响应，请稍后重试。"}), 500
+        email_html = f"<html><body style='font-family:sans-serif;color:#333'><h2>🎯 新提交记录：</h2><p>👤 <strong>姓名：</strong>{name}<br>...
