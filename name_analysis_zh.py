@@ -15,6 +15,13 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
+# Chinese month mapping
+CHINESE_MONTHS = {
+    '一月': 1, '二月': 2, '三月': 3, '四月': 4,
+    '五月': 5, '六月': 6, '七月': 7, '八月': 8,
+    '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
+}
+
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
@@ -108,9 +115,20 @@ def analyze_name():
         phone = data.get("phone", "").strip()
         email = data.get("email", "").strip()
         referrer = data.get("referrer", "").strip()
-        month_str = data.get("dob_month")
-        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str, "%B").month
-        birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
+        
+        # Handle Chinese month conversion
+        month_str = data.get("dob_month", "").strip()
+        if month_str.isdigit():
+            month = int(month_str)
+        else:
+            month = CHINESE_MONTHS.get(month_str)
+            if month is None:
+                return jsonify({"error": f"无效的月份: {month_str}"}), 400
+        
+        day = int(data.get("dob_day"))
+        year = int(data.get("dob_year"))
+        
+        birthdate = datetime(year, month, day)
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
