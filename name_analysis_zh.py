@@ -39,11 +39,11 @@ def generate_child_metrics():
         },
         {
             "title": "学习投入",
-            "labels": ["每日复习", "小组学习", "独立努力"],
+            "labels": ["每日复习", "小组学习", "独立学习"],
             "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
         },
         {
-            "title": "学科学习信心",
+            "title": "学术自信",
             "labels": ["数学", "阅读", "专注力"],
             "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
         }
@@ -51,14 +51,17 @@ def generate_child_metrics():
 
 def generate_child_summary(age, gender, country, metrics):
     return [
-        f"在 {country}，许多年幼的{gender.lower()}孩子正以安静而坚定的方式踏入学习的初期阶段，展现出独特的偏好。其中，视觉学习成为一项强有力的支点 —— 有 {metrics[0]['values'][0]}% 的学习者倾向于透过图像、颜色和故事来理解世界。听觉学习其次，占 {metrics[0]['values'][1]}%，而通过动手操作的动觉学习为 {metrics[0]['values'][2]}%。这些数据不仅仅是数字，更揭示了需要以打动孩子心灵和想象力的方式来呈现信息。对父母而言，这是一个将学习带回家的好机会 —— 透过图画书、视觉游戏和亲子故事时光，让学习变得充满乐趣与意义。",
-        f"深入观察这些孩子的学习方式，会发现一项温暖的趋势：有 {metrics[1]['values'][0]}% 已经养成了每日复习的习惯 —— 在年幼时展现出如此自律，实属不易。同时，有 {metrics[1]['values'][2]}% 展现出强烈的独立学习动机，这种内在驱动力令人赞叹。但只有 {metrics[1]['values'][1]}% 经常参与小组学习，这或许反映出他们更偏好安静、安全的学习环境，而非充满竞争或吵杂的氛围。家长不妨思考：我们该如何温柔地引导孩子参与群体学习，而不带来压力？亲子复习时间，或与信任的朋友一同进行温馨的故事分享，或许是很好的桥梁。",
-        f"在核心科目上的信心也揭示了重要信息。数学目前表现最为亮眼，占比为 {metrics[2]['values'][0]}%，而阅读则略高一点，为 {metrics[2]['values'][1]}%。专注力的得分为 {metrics[2]['values'][2]}%，显示许多孩子仍在学习如何保持持续注意力。但这并不是弱点，而是一种成长节奏 —— 需要用合适的“旋律”来引导。情绪调节、规律作息、减少屏幕时间、以及结合音乐或动作的教学方式，或许都能带来微妙却重要的转变。每个孩子都有自己的节奏 —— 关键在于如何在无压力、无比较的环境中帮助他们找到自己的步调。",
-        "这些学习信号不仅是一个快照，更是一段真实的成长故事。故事中满是潜力与期望，只盼大人们能看见他们的努力、情绪和偏好，而不仅是分数。在新加坡、马来西亚和台湾，家长与教育者如今有机会提供真正以孩子为中心的支持 —— 无论是选择擅长视觉引导的导师，还是寻找重视情感成长的学校系统，目标始终如一：让每个孩子都能在平衡、自信与喜悦中茁壮成长。"
+        f"在 {country}，许多年龄大约为 {age} 岁的{gender}孩童正踏入学习的初期阶段，展现出安静而独特的学习倾向。其中，视觉学习最为突出，有 {metrics[0]['values'][0]}% 的孩子喜欢通过图像、颜色与故事来理解世界。听觉型学习为 {metrics[0]['values'][1]}%，而动觉型则是 {metrics[0]['values'][2]}%。这些数字不仅仅是数据，它们反映了孩子们希望透过触动心灵与想象的方式来学习。家长可以透过绘本、图像游戏与讲故事的方式，引导他们更深入地探索。",
+
+        f"深入观察这些孩子的学习方式时，会发现温馨的趋势。其中 {metrics[1]['values'][0]}% 已经养成每日复习的习惯，是自律的表现；{metrics[1]['values'][2]}% 展现出强烈的独立学习动力，反映出他们的内在驱动力。然而，只有 {metrics[1]['values'][1]}% 经常参与小组学习，可能表示他们更倾向于在安静、安全的环境中学习。家长可思考如何以温和方式引导孩子适应同伴学习，例如亲子共读或与亲密朋友进行轻松的学习活动。",
+
+        f"在核心学科方面，自信度也展现出重要趋势。数学表现最佳，达 {metrics[2]['values'][0]}%；阅读略高，为 {metrics[2]['values'][1]}%；而专注力得分为 {metrics[2]['values'][2]}%。这表明许多孩子仍在练习持续专注的能力。与其视为弱点，不如理解为一种发展节奏。情绪调节、规律作息、减少屏幕时间，以及结合音乐或活动的教学方式，或许能带来显著改善。每个孩子都有自己的节奏，关键在于如何协助他们找到那个节奏，而非比较或施压。",
+
+        "这些学习讯号不仅仅是一个快照，而是一个故事 — 一个充满潜力的故事。家长与教育者在新加坡、马来西亚与台湾正面临一个机会：真正以孩子为中心的支持系统。无论是选择适合视觉型孩子的老师，或是寻找注重情感发展的教育环境，目标始终一致：让每位孩子在自信、平衡与喜悦中茁壮成长。"
     ]
 
 def generate_summary_html(paragraphs):
-    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 综合总结：</div><br>" + \
+    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 综合分析：</div><br>" + \
         "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>\n" for p in paragraphs)
 
 def generate_email_charts(metrics):
@@ -66,10 +69,10 @@ def generate_email_charts(metrics):
         bar_html = f"<h3 style='color:#333; margin-top:30px;'>{title}</h3>"
         for label, val in zip(labels, values):
             bar_html += f"""
-            <div style="margin:8px 0;">
-              <div style="font-size:15px; margin-bottom:4px;">{label}</div>
-              <div style="background:#eee; border-radius:10px; overflow:hidden;">
-                <div style="background:{color}; width:{val}%; padding:6px 12px; color:white; font-weight:bold;">
+            <div style=\"margin:8px 0;\">
+              <div style=\"font-size:15px; margin-bottom:4px;\">{label}</div>
+              <div style=\"background:#eee; border-radius:10px; overflow:hidden;\">
+                <div style=\"background:{color}; width:{val}%; padding:6px 12px; color:white; font-weight:bold;\">
                   {val}%
                 </div>
               </div>
@@ -87,14 +90,13 @@ def generate_email_charts(metrics):
 def build_email_report(summary_html, charts_html):
     footer = """
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>本报告中的洞察由 KataChat 的 AI 系统生成，基于以下来源：</strong><br>
-      1. 我们专有的、经过匿名处理的新加坡、马来西亚和台湾学生学习数据（经家长同意）<br>
-      2. 来自 OpenAI 研究数据库等可信第三方的综合教育趋势<br>
-      <em>所有数据均通过我们的 AI 模型进行处理，确保符合 PDPA 隐私法规。</em>
+      <strong>本报告由 KataChat AI 系统自动生成，数据来源包括：</strong><br>
+      1. 我们专属数据库中来自新马台家长授权的匿名学习样本<br>
+      2. 来自 OpenAI 与第三方平台的整体教育趋势资料<br>
+      <em>所有数据经过 AI 模型分析，仅用于发现趋势，严格遵守 PDPA 隐私规范。</em>
     </p>
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>备注：</strong> 您的个性化报告将在 24-48 小时内发送到您的邮箱。
-      如您希望进一步了解结果，可通过 Telegram 联系我们或预约 15 分钟咨询。
+      <strong>备注：</strong> 您的完整个性化报告将于 24–48 小时内通过电邮发送。若想深入探讨分析内容，欢迎 Telegram 联系我们或预约 15 分钟对话。
     </p>
     """
     return summary_html + charts_html + footer
@@ -103,7 +105,7 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        logging.info("[analyze_name] 收到用户提交数据")
+        logging.info(f"[analyze_name] 收到提交")
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
@@ -114,7 +116,7 @@ def analyze_name():
         referrer = data.get("referrer", "").strip()
 
         month_str = str(data.get("dob_month")).strip()
-        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str.capitalize(), "%B").month
+        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str, "%B").month
         birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
@@ -125,7 +127,7 @@ def analyze_name():
         charts_html = generate_email_charts(metrics)
         email_html_result = build_email_report(summary_only_html, charts_html)
 
-        email_html = f"""<html><body style="font-family:sans-serif;color:#333">
+        email_html = f"""<html><body style=\"font-family:sans-serif;color:#333\">
         <h2>🎯 新用户提交：</h2>
         <p>
         👤 <strong>英文名：</strong> {name}<br>
@@ -134,8 +136,8 @@ def analyze_name():
         🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
         🕑 <strong>年龄：</strong> {age}<br>
         🌍 <strong>国家：</strong> {country}<br>
-        📞 <strong>手机号：</strong> {phone}<br>
-        📧 <strong>邮箱：</strong> {email}<br>
+        📞 <strong>电话：</strong> {phone}<br>
+        📧 <strong>电邮：</strong> {email}<br>
         💬 <strong>推荐人：</strong> {referrer}
         </p>
         <hr><h2>📊 AI 分析报告</h2>
@@ -144,7 +146,6 @@ def analyze_name():
 
         send_email(email_html)
 
-        # 仅网页展示用 footer
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
@@ -152,7 +153,7 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.exception("❌ /analyze_name 出错")
+        logging.exception("❌ /analyze_name 出现错误")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
