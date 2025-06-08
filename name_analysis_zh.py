@@ -34,16 +34,16 @@ def generate_child_metrics():
     return [
         {
             "title": "学习偏好",
-            "labels": ["视觉", "听觉", "动手实践"],
+            "labels": ["视觉", "听觉", "动觉"],
             "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
         },
         {
-            "title": "学习投入",
+            "title": "学习投入度",
             "labels": ["每日复习", "小组学习", "独立学习"],
             "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
         },
         {
-            "title": "学科学习信心",
+            "title": "学科自信度",
             "labels": ["数学", "阅读", "专注力"],
             "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
         }
@@ -51,17 +51,17 @@ def generate_child_metrics():
 
 def generate_child_summary(age, gender, country, metrics):
     return [
-        f"在{country}，许多年约{age}岁的{gender}孩子，正以安静的决心与独特的节奏，踏入学习的启蒙阶段。其中，有{metrics[0]['values'][0]}%的孩子展现出对“视觉学习”的偏好，他们通过图像、颜色和故事来理解世界。听觉学习的比例为{metrics[0]['values'][1]}%，动手实践的学习方式则为{metrics[0]['values'][2]}%。这些数字并非冰冷的数据，而是提醒我们：孩子们需要的是能触动内心与想象力的学习方式。绘本、视觉游戏、家庭故事时间，都是家长可以立即实践的桥梁。",
-        
-        f"深入观察孩子们的学习习惯，我们看见一些温柔的趋势：{metrics[1]['values'][0]}%的孩子已养成“每日复习”的习惯，这是一个令人鼓舞的早期自律表现。而{metrics[1]['values'][2]}%的孩子展现出在独立学习中的高度投入，这显示了他们内在的驱动力。但仅有{metrics[1]['values'][1]}%参与小组学习，或许反映出他们更偏好安静、安全的学习空间，而非热闹竞争的场景。家长可以尝试引导，例如与孩子一起复习，或组织温馨的亲友共读时光，慢慢建立社交学习的信任感。",
-        
-        f"在核心学科的信心方面，{metrics[2]['values'][0]}%的孩子在数学上表现最为自信；而阅读的自信比例为{metrics[2]['values'][1]}%。在“专注力”方面为{metrics[2]['values'][2]}%，这提醒我们许多孩子仍在学习专注的节奏。但这不是缺点，而是一种自然的发展节拍。通过建立规律作息、减少电子产品时间、加入音乐或肢体活动等创新教学方式，能帮助孩子逐步找到属于自己的节奏与专注状态。",
-        
-        "整体来看，这些学习数据不仅是一组统计，更像是孩子内在世界的声音。他们渴望被理解，不只是成绩上的表现，而是努力的过程、学习的情绪、以及他们真正的偏好。身处新加坡、马来西亚和台湾的家长与教育者，有机会用更细腻的方式支持孩子成长。从为孩子选择适合视觉型教学的导师，到寻求注重情绪成长的学校体系，我们所做的每一个决定，最终都在塑造孩子充满自信、平衡感与快乐的学习旅程。"
+        f"在{country}，许多年龄约为{age}岁的{gender.lower()}孩童正安静地踏入学习之路，展现出独特的学习偏好。其中，{metrics[0]['values'][0]}%的孩子偏好视觉学习 —— 他们喜欢通过图像、颜色与故事来理解世界。听觉学习占{metrics[0]['values'][1]}%，而动觉（例如动手操作）则为{metrics[0]['values'][2]}%。这些数据不仅是数字，它们也提醒我们：学习内容应以触动孩子想象与情感的方式呈现，才能激发出他们的好奇心与热情。",
+
+        f"进一步观察他们的学习习惯，我们发现温暖的趋势正在浮现。有{metrics[1]['values'][0]}%的孩子已养成每日复习的习惯，这是他们纪律意识的体现。而{metrics[1]['values'][2]}%表现出良好的独立学习能力，反映了他们内在的动力。然而，仅有{metrics[1]['values'][1]}%参与小组学习，可能说明他们更偏好安静、安全的学习环境。家长可考虑透过亲子共学、与信任的朋友共读等方式，温和地引导他们参与集体学习。",
+
+        f"在核心学科的自信表现方面，数学得分最高，为{metrics[2]['values'][0]}%，阅读紧随其后，为{metrics[2]['values'][1]}%。专注力方面则为{metrics[2]['values'][2]}%，显示他们还在发展专注的节奏。这并非弱点，而是一种成长节奏，只需耐心引导。例如减少屏幕时间、采用音乐融入学习、安排短暂活动休息等，都可能成为帮助他们找到节奏的小工具。",
+
+        "这些学习信号，不只是报告，更是一段故事。它讲述了一个个小小脑袋背后充满希望的旅程。他们希望被大人们理解：不仅是成绩，而是努力的方式、情绪的表现与学习的倾向。无论是在新加坡、马来西亚或台湾，家长与教育者都有机会提供更符合孩子内在节奏的陪伴与资源，让学习成为平衡、自信、且充满乐趣的成长旅程。"
     ]
 
 def generate_summary_html(paragraphs):
-    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 学习报告摘要：</div><br>" + \
+    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 总结：</div><br>" + \
         "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>\n" for p in paragraphs)
 
 def generate_email_charts(metrics):
@@ -90,13 +90,14 @@ def generate_email_charts(metrics):
 def build_email_report(summary_html, charts_html):
     footer = """
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>本报告由 KataChat AI 系统生成，基于以下数据来源：</strong><br>
-      1. 来自新加坡、马来西亚、台湾儿童（家长授权）的匿名学习行为数据库<br>
-      2. 来自 OpenAI 教育研究及可信教育趋势数据的整合参考<br>
-      <em>所有数据均严格遵守 PDPA 隐私标准进行分析与呈现。</em>
+      <strong>本报告由 KataChat AI 系统生成，基于以下分析：</strong><br>
+      1. 新加坡、马来西亚与台湾地区的匿名学习行为数据库（在家长同意下采集）<br>
+      2. 第三方公开教育数据，包括 OpenAI 研究资料<br>
+      <em>所有数据皆通过 AI 模型分析，识别具统计意义的趋势，且完全符合 PDPA 法规。</em>
     </p>
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>PS：</strong> 本报告也已发送至您的邮箱，若您希望进一步了解报告内容，欢迎随时联络我们安排一次 15 分钟交流。
+      <strong>附注：</strong> 个性化分析结果将于 24–48 小时内发送至您的邮箱。
+      若您希望进一步探索报告内容，欢迎 Telegram 或预约 15 分钟快速交流。
     </p>
     """
     return summary_html + charts_html + footer
@@ -105,7 +106,7 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        logging.info(f"[analyze_name] Payload received")
+        logging.info(f"[analyze_name] 接收到提交内容")
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
@@ -128,7 +129,7 @@ def analyze_name():
         email_html_result = build_email_report(summary_only_html, charts_html)
 
         email_html = f"""<html><body style="font-family:sans-serif;color:#333">
-        <h2>🎯 新用户提交：</h2>
+        <h2>🎯 新提交数据：</h2>
         <p>
         👤 <strong>英文姓名：</strong> {name}<br>
         🈶 <strong>中文姓名：</strong> {chinese_name}<br>
@@ -140,12 +141,13 @@ def analyze_name():
         📧 <strong>邮箱：</strong> {email}<br>
         💬 <strong>推荐人：</strong> {referrer}
         </p>
-        <hr><h2>📊 AI 学习报告</h2>
+        <hr><h2>📊 AI 生成报告</h2>
         {email_html_result}
         </body></html>"""
 
         send_email(email_html)
 
+        # 仅网页端显示的结尾
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
@@ -153,7 +155,7 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.exception("❌ /analyze_name 处理出错")
+        logging.exception("❌ /analyze_name 处理失败")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
