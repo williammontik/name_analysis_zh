@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, smtplib, logging, random
-from datetime import datetime
+from datetime import date  # Changed from datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
@@ -133,15 +133,22 @@ def analyze_name():
         if not month:
             return jsonify({"error": f"⚠️ 无效的月份: {month_str}"}), 400
 
-        day = int(data.get("dob_day"))
-        year = int(data.get("dob_year"))
-        birthdate = datetime(year, month, day)
+        # Validate day/year are integers
+        try:
+            day = int(data.get("dob_day"))
+            year = int(data.get("dob_year"))
+        except (TypeError, ValueError):
+            return jsonify({"error": "⚠️ 日期和年份必须是数字"}), 400
 
-        # Convert gender to English for processing (if needed)
-        gender_en = CHINESE_GENDER.get(gender_zh, "unknown")
-
-        today = datetime.today()
-        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        # Create birthdate using date instead of datetime
+        birthdate = date(year, month, day)
+        
+        # Calculate age
+        today = date.today()
+        age = today.year - birthdate.year
+        # Adjust if birthday hasn't occurred yet this year
+        if (today.month, today.day) < (birthdate.month, birthdate.day):
+            age -= 1
 
         metrics = generate_child_metrics()
         summary_paragraphs = generate_child_summary(age, gender_zh, country, metrics)
@@ -157,7 +164,7 @@ def analyze_name():
               👤 <strong>姓名：</strong> {name}<br>
               🈶 <strong>中文名：</strong> {chinese_name}<br>
               ⚧️ <strong>性别：</strong> {gender_zh}<br>
-              🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
+              🎂 <strong>出生日期：</strong> {birthdate}<br>
               🕑 <strong>年龄：</strong> {age}<br>
               🌍 <strong>国家：</strong> {country}<br>
               📞 <strong>电话：</strong> {phone}<br>
