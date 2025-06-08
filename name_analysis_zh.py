@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-# === App Setup ===
+# === Setup ===
 app = Flask(__name__)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
@@ -16,11 +16,16 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
-# === Chinese month conversion ===
+# === Mappings ===
 CHINESE_MONTHS = {
     '一月': 1, '二月': 2, '三月': 3, '四月': 4,
     '五月': 5, '六月': 6, '七月': 7, '八月': 8,
     '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
+}
+
+CHINESE_GENDER = {
+    '男': 'male',
+    '女': 'female'
 }
 
 # === Email Sending ===
@@ -39,7 +44,7 @@ def send_email(html_body):
     except Exception as e:
         logging.error("❌ 邮件发送失败", exc_info=True)
 
-# === Chart Data ===
+# === Chart Metrics ===
 def generate_child_metrics():
     return [
         {
@@ -60,20 +65,20 @@ def generate_child_metrics():
     ]
 
 # === Summary Generation ===
-def generate_child_summary(age, gender, country, metrics):
+def generate_child_summary(age, gender_zh, country, metrics):
     return [
-        f"在{country}，许多约{age}岁的{gender}孩子正在安静地探索学习之旅。视觉学习占比约{metrics[0]['values'][0]}%，听觉学习{metrics[0]['values'][1]}%，动觉方式{metrics[0]['values'][2]}%。这些数字不仅是统计，更是孩子探索世界的方式。",
+        f"在{country}，许多约{age}岁的{gender_zh}孩子正在安静地探索学习之旅。视觉学习占比约{metrics[0]['values'][0]}%，听觉学习{metrics[0]['values'][1]}%，动觉方式{metrics[0]['values'][2]}%。这些数字不仅是统计，更是孩子探索世界的方式。",
         f"{metrics[1]['values'][0]}%的孩子每天复习，显示出自律习惯。{metrics[1]['values'][2]}%独立努力，体现自主性。但小组学习仅有{metrics[1]['values'][1]}%，家长可试着增加互动机会，比如共读故事、家庭问答等。",
         f"数学方面信心为{metrics[2]['values'][0]}%，阅读{metrics[2]['values'][1]}%，专注力为{metrics[2]['values'][2]}%。建议透过音乐或小游戏提高专注表现，让学习更轻松。",
         "这些数据反映出孩子在成长过程中真实的学习信号。透过调整学习方式与情绪支持，家长可帮助孩子更好地建立自信并发挥潜力。"
     ]
 
-# === Summary HTML Block ===
+# === Build Summary HTML ===
 def generate_summary_html(paragraphs):
     return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 报告概览：</div><br>" + \
         "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>\n" for p in paragraphs)
 
-# === Chart HTML Block ===
+# === Build Chart HTML ===
 def generate_email_charts(metrics):
     def make_bar_html(title, labels, values, color):
         html = f"<h3 style='color:#333; margin-top:30px;'>{title}</h3>"
@@ -116,13 +121,13 @@ def analyze_name():
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
-        gender = data.get("gender", "").strip()
+        gender_zh = data.get("gender", "").strip()
         country = data.get("country", "").strip()
         phone = data.get("phone", "").strip()
         email = data.get("email", "").strip()
         referrer = data.get("referrer", "").strip()
 
-        # ✅ Convert Chinese month to number
+        # Convert dob_month from Chinese to int
         month_str = data.get("dob_month", "").strip()
         month = CHINESE_MONTHS.get(month_str)
         if not month:
@@ -132,12 +137,15 @@ def analyze_name():
         year = int(data.get("dob_year"))
         birthdate = datetime(year, month, day)
 
+        # Convert gender to English for processing (if needed)
+        gender_en = CHINESE_GENDER.get(gender_zh, "unknown")
+
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
         metrics = generate_child_metrics()
-        summary_ps = generate_child_summary(age, gender, country, metrics)
-        summary_html = generate_summary_html(summary_ps)
+        summary_paragraphs = generate_child_summary(age, gender_zh, country, metrics)
+        summary_html = generate_summary_html(summary_paragraphs)
         charts_html = generate_email_charts(metrics)
         email_html_result = build_email_report(summary_html, charts_html)
 
@@ -148,7 +156,7 @@ def analyze_name():
             <p>
               👤 <strong>姓名：</strong> {name}<br>
               🈶 <strong>中文名：</strong> {chinese_name}<br>
-              ⚧️ <strong>性别：</strong> {gender}<br>
+              ⚧️ <strong>性别：</strong> {gender_zh}<br>
               🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
               🕑 <strong>年龄：</strong> {age}<br>
               🌍 <strong>国家：</strong> {country}<br>
@@ -165,7 +173,6 @@ def analyze_name():
 
         send_email(email_html)
 
-        # Return summary + footer (no email charts)
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
@@ -176,6 +183,6 @@ def analyze_name():
         logging.exception("❌ Error in /analyze_name")
         return jsonify({"error": str(e)}), 500
 
-# === Run App ===
+# === Run Server ===
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
