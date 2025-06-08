@@ -34,16 +34,16 @@ def generate_child_metrics():
     return [
         {
             "title": "学习偏好",
-            "labels": ["视觉", "听觉", "动觉"],
+            "labels": ["视觉型", "听觉型", "动觉型"],
             "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
         },
         {
-            "title": "学习投入度",
-            "labels": ["每日复习", "小组学习", "独立学习"],
+            "title": "学习投入",
+            "labels": ["每日复习", "小组学习", "独立努力"],
             "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
         },
         {
-            "title": "学科自信度",
+            "title": "学科学习信心",
             "labels": ["数学", "阅读", "专注力"],
             "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
         }
@@ -51,17 +51,14 @@ def generate_child_metrics():
 
 def generate_child_summary(age, gender, country, metrics):
     return [
-        f"在{country}，许多年龄约为{age}岁的{gender.lower()}孩童正安静地踏入学习之路，展现出独特的学习偏好。其中，{metrics[0]['values'][0]}%的孩子偏好视觉学习 —— 他们喜欢通过图像、颜色与故事来理解世界。听觉学习占{metrics[0]['values'][1]}%，而动觉（例如动手操作）则为{metrics[0]['values'][2]}%。这些数据不仅是数字，它们也提醒我们：学习内容应以触动孩子想象与情感的方式呈现，才能激发出他们的好奇心与热情。",
-
-        f"进一步观察他们的学习习惯，我们发现温暖的趋势正在浮现。有{metrics[1]['values'][0]}%的孩子已养成每日复习的习惯，这是他们纪律意识的体现。而{metrics[1]['values'][2]}%表现出良好的独立学习能力，反映了他们内在的动力。然而，仅有{metrics[1]['values'][1]}%参与小组学习，可能说明他们更偏好安静、安全的学习环境。家长可考虑透过亲子共学、与信任的朋友共读等方式，温和地引导他们参与集体学习。",
-
-        f"在核心学科的自信表现方面，数学得分最高，为{metrics[2]['values'][0]}%，阅读紧随其后，为{metrics[2]['values'][1]}%。专注力方面则为{metrics[2]['values'][2]}%，显示他们还在发展专注的节奏。这并非弱点，而是一种成长节奏，只需耐心引导。例如减少屏幕时间、采用音乐融入学习、安排短暂活动休息等，都可能成为帮助他们找到节奏的小工具。",
-
-        "这些学习信号，不只是报告，更是一段故事。它讲述了一个个小小脑袋背后充满希望的旅程。他们希望被大人们理解：不仅是成绩，而是努力的方式、情绪的表现与学习的倾向。无论是在新加坡、马来西亚或台湾，家长与教育者都有机会提供更符合孩子内在节奏的陪伴与资源，让学习成为平衡、自信、且充满乐趣的成长旅程。"
+        f"在 {country}，许多年幼的{gender.lower()}孩子正以安静而坚定的方式踏入学习的初期阶段，展现出独特的偏好。其中，视觉学习成为一项强有力的支点 —— 有 {metrics[0]['values'][0]}% 的学习者倾向于透过图像、颜色和故事来理解世界。听觉学习其次，占 {metrics[0]['values'][1]}%，而通过动手操作的动觉学习为 {metrics[0]['values'][2]}%。这些数据不仅仅是数字，更揭示了需要以打动孩子心灵和想象力的方式来呈现信息。对父母而言，这是一个将学习带回家的好机会 —— 透过图画书、视觉游戏和亲子故事时光，让学习变得充满乐趣与意义。",
+        f"深入观察这些孩子的学习方式，会发现一项温暖的趋势：有 {metrics[1]['values'][0]}% 已经养成了每日复习的习惯 —— 在年幼时展现出如此自律，实属不易。同时，有 {metrics[1]['values'][2]}% 展现出强烈的独立学习动机，这种内在驱动力令人赞叹。但只有 {metrics[1]['values'][1]}% 经常参与小组学习，这或许反映出他们更偏好安静、安全的学习环境，而非充满竞争或吵杂的氛围。家长不妨思考：我们该如何温柔地引导孩子参与群体学习，而不带来压力？亲子复习时间，或与信任的朋友一同进行温馨的故事分享，或许是很好的桥梁。",
+        f"在核心科目上的信心也揭示了重要信息。数学目前表现最为亮眼，占比为 {metrics[2]['values'][0]}%，而阅读则略高一点，为 {metrics[2]['values'][1]}%。专注力的得分为 {metrics[2]['values'][2]}%，显示许多孩子仍在学习如何保持持续注意力。但这并不是弱点，而是一种成长节奏 —— 需要用合适的“旋律”来引导。情绪调节、规律作息、减少屏幕时间、以及结合音乐或动作的教学方式，或许都能带来微妙却重要的转变。每个孩子都有自己的节奏 —— 关键在于如何在无压力、无比较的环境中帮助他们找到自己的步调。",
+        "这些学习信号不仅是一个快照，更是一段真实的成长故事。故事中满是潜力与期望，只盼大人们能看见他们的努力、情绪和偏好，而不仅是分数。在新加坡、马来西亚和台湾，家长与教育者如今有机会提供真正以孩子为中心的支持 —— 无论是选择擅长视觉引导的导师，还是寻找重视情感成长的学校系统，目标始终如一：让每个孩子都能在平衡、自信与喜悦中茁壮成长。"
     ]
 
 def generate_summary_html(paragraphs):
-    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 总结：</div><br>" + \
+    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 综合总结：</div><br>" + \
         "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>\n" for p in paragraphs)
 
 def generate_email_charts(metrics):
@@ -90,14 +87,14 @@ def generate_email_charts(metrics):
 def build_email_report(summary_html, charts_html):
     footer = """
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>本报告由 KataChat AI 系统生成，基于以下分析：</strong><br>
-      1. 新加坡、马来西亚与台湾地区的匿名学习行为数据库（在家长同意下采集）<br>
-      2. 第三方公开教育数据，包括 OpenAI 研究资料<br>
-      <em>所有数据皆通过 AI 模型分析，识别具统计意义的趋势，且完全符合 PDPA 法规。</em>
+      <strong>本报告中的洞察由 KataChat 的 AI 系统生成，基于以下来源：</strong><br>
+      1. 我们专有的、经过匿名处理的新加坡、马来西亚和台湾学生学习数据（经家长同意）<br>
+      2. 来自 OpenAI 研究数据库等可信第三方的综合教育趋势<br>
+      <em>所有数据均通过我们的 AI 模型进行处理，确保符合 PDPA 隐私法规。</em>
     </p>
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>附注：</strong> 个性化分析结果将于 24–48 小时内发送至您的邮箱。
-      若您希望进一步探索报告内容，欢迎 Telegram 或预约 15 分钟快速交流。
+      <strong>备注：</strong> 您的个性化报告将在 24-48 小时内发送到您的邮箱。
+      如您希望进一步了解结果，可通过 Telegram 联系我们或预约 15 分钟咨询。
     </p>
     """
     return summary_html + charts_html + footer
@@ -106,7 +103,7 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        logging.info(f"[analyze_name] 接收到提交内容")
+        logging.info("[analyze_name] 收到用户提交数据")
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
@@ -129,25 +126,25 @@ def analyze_name():
         email_html_result = build_email_report(summary_only_html, charts_html)
 
         email_html = f"""<html><body style="font-family:sans-serif;color:#333">
-        <h2>🎯 新提交数据：</h2>
+        <h2>🎯 新用户提交：</h2>
         <p>
-        👤 <strong>英文姓名：</strong> {name}<br>
-        🈶 <strong>中文姓名：</strong> {chinese_name}<br>
+        👤 <strong>英文名：</strong> {name}<br>
+        🈶 <strong>中文名：</strong> {chinese_name}<br>
         ⚧️ <strong>性别：</strong> {gender}<br>
         🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
         🕑 <strong>年龄：</strong> {age}<br>
         🌍 <strong>国家：</strong> {country}<br>
-        📞 <strong>电话：</strong> {phone}<br>
+        📞 <strong>手机号：</strong> {phone}<br>
         📧 <strong>邮箱：</strong> {email}<br>
         💬 <strong>推荐人：</strong> {referrer}
         </p>
-        <hr><h2>📊 AI 生成报告</h2>
+        <hr><h2>📊 AI 分析报告</h2>
         {email_html_result}
         </body></html>"""
 
         send_email(email_html)
 
-        # 仅网页端显示的结尾
+        # 仅网页展示用 footer
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
@@ -155,7 +152,7 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.exception("❌ /analyze_name 处理失败")
+        logging.exception("❌ /analyze_name 出错")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
