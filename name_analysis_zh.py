@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, smtplib, logging, random
-from datetime import date  # Changed from datetime
+from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
@@ -140,13 +140,10 @@ def analyze_name():
         except (TypeError, ValueError):
             return jsonify({"error": "⚠️ 日期和年份必须是数字"}), 400
 
-        # Create birthdate using date instead of datetime
-        birthdate = date(year, month, day)
-        
         # Calculate age
+        birthdate = date(year, month, day)
         today = date.today()
         age = today.year - birthdate.year
-        # Adjust if birthday hasn't occurred yet this year
         if (today.month, today.day) < (birthdate.month, birthdate.day):
             age -= 1
 
@@ -179,7 +176,6 @@ def analyze_name():
         """
 
         send_email(email_html)
-
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
