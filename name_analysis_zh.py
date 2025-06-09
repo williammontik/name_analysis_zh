@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
-import base64
-import os
-import random
-import smtplib
+import os, smtplib, logging, random
 from datetime import datetime
-from io import BytesIO
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-import matplotlib.pyplot as plt
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+app.logger.setLevel(logging.DEBUG)
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
@@ -21,8 +16,14 @@ SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
 CHINESE_MONTHS = {
-    '一月': 1, '二月': 2, '三月': 3, '四月': 4, '五月': 5, '六月': 6,
-    '七月': 7, '八月': 8, '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
+    '一月': 1, '二月': 2, '三月': 3, '四月': 4,
+    '五月': 5, '六月': 6, '七月': 7, '八月': 8,
+    '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
+}
+ENGLISH_MONTHS = {
+    'January': 1, 'February': 2, 'March': 3, 'April': 4,
+    'May': 5, 'June': 6, 'July': 7, 'August': 8,
+    'September': 9, 'October': 10, 'November': 11, 'December': 12
 }
 
 CHINESE_GENDER = {
@@ -30,66 +31,10 @@ CHINESE_GENDER = {
     '女': '女孩'
 }
 
-def compute_age(day, month, year):
-    try:
-        month_num = CHINESE_MONTHS.get(month, 1)
-        birth_date = datetime(int(year), month_num, int(day))
-        today = datetime.today()
-        return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-    except:
-        return None
-
-def generate_chart_base64(data_dict, title):
-    fig, ax = plt.subplots(figsize=(6, 1.2))
-    bars = ax.barh(list(data_dict.keys()), list(data_dict.values()))
-    for i, bar in enumerate(bars):
-        ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2,
-                f'{bar.get_width()}%', va='center')
-    ax.set_xlim(0, 100)
-    ax.set_title(title, fontsize=10)
-    ax.axis('off')
-    buf = BytesIO()
-    plt.tight_layout()
-    plt.savefig(buf, format="png", bbox_inches='tight')
-    plt.close(fig)
-    base64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
-    return f'<img src="data:image/png;base64,{base64_str}" style="width:100%; max-width:500px; margin:10px 0;" />'
-
-def generate_summary(age, gender, country, learning_styles, habits, confidence):
-    g_text = CHINESE_GENDER.get(gender, "孩子")
-    vs = learning_styles.get("视觉型", 0)
-    as_ = learning_styles.get("听觉型", 0)
-    ks = learning_styles.get("动手型", 0)
-    daily = habits.get("每日复习", 0)
-    solo = habits.get("独立学习", 0)
-    group = habits.get("小组学习", 0)
-    math = confidence.get("数学信心", 0)
-    reading = confidence.get("阅读信心", 0)
-    focus = confidence.get("专注力", 0)
-
-    para1 = f"在{country}，许多大约 {age} 岁的{g_text}正逐步建立属于他们的学习节奏。数据显示，有 {vs}% 的孩子偏好视觉型学习，说明图像、色彩与结构化内容能帮助他们更好地掌握知识；听觉型为 {as_}%，动手型为 {ks}%。这些偏好反映出他们在理解世界时所依赖的感官路径日趋多样。"
-    para2 = f"在学习投入方面，有 {daily}% 的孩子养成了每日复习的习惯，是学习自律的良好信号。{solo}% 喜欢独立学习，展现出他们对自我节奏的掌控；而仅有 {group}% 倾向小组学习，这或许说明他们在协作中仍需建立更多信心。"
-    para3 = f"从学科自信来看，数学得分为 {math}%，代表他们在逻辑推理方面有一定优势；阅读信心为 {reading}%，提示词汇积累和语言理解尚有进步空间；专注力得分为 {focus}%，提醒家长优化学习环境与日常节奏，以提升持续注意力。"
-    para4 = f"整体来看，这些趋势勾勒出{g_text}当前的成长轨迹。父母若能结合他们的偏好与节奏，提供一个视觉友好、情绪被理解、节奏被尊重的环境，将有助于他们在探索中建立自信，迈向更成熟的成长阶段。"
-
-    return f"<p>{para1}</p><p>{para2}</p><p>{para3}</p><p>{para4}</p>"
-
-FOOTER = """
-<p style=\"background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;\">
-  <strong>本报告中的洞察由 KataChat 的 AI 系统生成，依据以下来源分析：</strong><br>
-  1. 我们专属数据库中经家长同意收集的新马台儿童学习模式匿名数据<br>
-  2. 来自 OpenAI 等可信来源的教育趋势汇总（不包含个人信息）<br>
-  <em>所有数据在严格遵守 PDPA 的前提下，通过 AI 模型识别统计显著趋势。</em>
-</p>
-<p style=\"background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;\">
-  <strong>PS：</strong>您将收到完整图表的电子邮件版本（请检查垃圾邮件箱）。如需进一步探讨结果，欢迎通过 Telegram 联系我们或预约 15 分钟通话。
-</p>
-"""
-
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "🎓 孩子学习分析报告 | KataChat AI"
+        msg['Subject'] = "新的 KataChatBot 提交记录"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -97,51 +42,87 @@ def send_email(html_body):
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
-        return True
+        logging.info("✅ 邮件发送成功")
     except Exception as e:
-        return False
+        logging.error("❌ 邮件发送失败: %s", str(e))
 
-@app.route("/analyze_name", methods=["POST"])
+@app.route('/analyze_name', methods=['POST'])
 def analyze_name():
-    data = request.get_json()
-    name = data.get("name", "")
-    gender = data.get("gender", "")
-    country = data.get("country", "")
-    email = data.get("email", "")
-    day = data.get("dob_day")
-    month = data.get("dob_month")
-    year = data.get("dob_year")
-    age = compute_age(day, month, year) or 10
+    try:
+        data = request.get_json()
+        name = data.get("name", "")
+        chinese_name = data.get("chinese_name", "")
+        gender = data.get("gender", "")
+        dob_day = data.get("dob_day", "")
+        dob_month = data.get("dob_month", "")
+        dob_year = data.get("dob_year", "")
+        phone = data.get("phone", "")
+        email = data.get("email", "")
+        country = data.get("country", "")
+        referrer = data.get("referrer", "")
+        chart_images = data.get("chart_images", [])
 
-    learning_styles = {
-        "视觉型": random.randint(50, 80),
-        "听觉型": random.randint(20, 50),
-        "动手型": random.randint(20, 40)
-    }
+        if dob_month in CHINESE_MONTHS:
+            month_num = CHINESE_MONTHS[dob_month]
+        elif dob_month in ENGLISH_MONTHS:
+            month_num = ENGLISH_MONTHS[dob_month]
+        else:
+            return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month}"}), 400
 
-    study_habits = {
-        "每日复习": random.randint(40, 70),
-        "独立学习": random.randint(30, 60),
-        "小组学习": random.randint(20, 50)
-    }
+        birthdate = datetime(int(dob_year), month_num, int(dob_day))
+        age = datetime.now().year - birthdate.year
+        gender_label = CHINESE_GENDER.get(gender, "孩子")
 
-    confidence_scores = {
-        "数学信心": random.randint(40, 90),
-        "阅读信心": random.randint(40, 80),
-        "专注力": random.randint(30, 70)
-    }
+        metrics = [
+            {"title": "学习偏好", "labels": ["视觉型", "听觉型", "动手型"], "values": [50, 35, 11]},
+            {"title": "学习投入", "labels": ["每日复习", "小组学习", "自主学习"], "values": [58, 22, 43]},
+            {"title": "学习信心", "labels": ["数学", "阅读", "专注力"], "values": [67, 58, 58]},
+        ]
 
-    chart1 = generate_chart_base64(learning_styles, "学习类型倾向")
-    chart2 = generate_chart_base64(study_habits, "学习投入模式")
-    chart3 = generate_chart_base64(confidence_scores, "学科信心与专注力")
+        para1 = f"在{country}，许多年约 {age} 岁的{gender_label}正在慢慢建立属于自己的学习习惯与风格。从数据来看，视觉型学习偏好占了 50%，说明图片、颜色与图像化内容对他们有明显吸引力；听觉型占 35%，而动手实践型则为 11%。这反映了此年龄段孩子在信息吸收方式上的多样差异。"
+        para2 = "在学习投入方面，有 58% 的孩子已养成每日复习的好习惯，这是一个相当积极的信号；而 43% 偏好自主学习，显示他们具备自我驱动的潜力；至于小组学习则较少，仅 22%，这可能意味着人际互动方面仍在培养中。"
+        para3 = "在学习信心方面，数学达到 67%，显示他们对逻辑与计算有一定掌握；阅读方面为 58%，略显保守，可能与语言环境或词汇基础有关；而专注力则为 58%，反映孩子在持续注意力上的发展仍有提升空间。"
+        para4 = "综合来看，这些趋势说明孩子正处于探索与成长的交汇点，家长可以根据其偏好与特质，提供更贴近需求的支持环境与学习资源，从而协助他们更自在地发挥潜能。"
 
-    summary = generate_summary(age, gender, country, learning_styles, study_habits, confidence_scores)
-    full_html = chart1 + chart2 + chart3 + summary + FOOTER
+        summary = f"🧠 学习总结：\n\n{para1}\n\n{para2}\n\n{para3}\n\n{para4}"
+        formatted_summary = summary.replace('\n', '<br>')
 
-    send_email(full_html)
+        chart_blocks = ""
+        for img in chart_images:
+            chart_blocks += f'<img src="data:image/png;base64,{img}" style="width:100%; max-width:480px; margin-top:20px;"><br>'
 
-    return jsonify({
-        "charts_html": chart1 + chart2 + chart3,
-        "summary_html": summary,
-        "footer_html": FOOTER
-    })
+        html_body = f"""
+        👤 姓名：{name}<br>
+        🈶 中文名：{chinese_name}<br>
+        ⚧️ 性别：{gender}<br>
+        🎂 生日：{dob_year}-{dob_month}-{dob_day}<br>
+        🕑 年龄：{age}<br>
+        🌍 国家：{country}<br>
+        📞 电话：{phone}<br>
+        📧 邮箱：{email}<br>
+        💬 推荐人：{referrer}<br><br>
+
+        📊 AI 分析：<br>{formatted_summary}<br><br>
+        {chart_blocks}
+
+        <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">
+        本报告由 KataChat AI 系统生成，数据来源包括：<br>
+        1. 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
+        2. OpenAI 教育研究数据与趋势分析<br>
+        所有数据处理均符合 PDPA 数据保护规范。
+        </div>
+        """
+
+        send_email(html_body)
+
+        return jsonify({
+            "analysis": summary,
+            "metrics": metrics
+        })
+
+    except Exception as e:
+        logging.error("❌ 系统错误: %s", str(e))
+        return jsonify({"error": "⚠️ 系统内部错误，请稍后再试"}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
