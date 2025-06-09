@@ -15,10 +15,16 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
+CHINESE_MONTHS = {
+    "一月": 1, "二月": 2, "三月": 3, "四月": 4,
+    "五月": 5, "六月": 6, "七月": 7, "八月": 8,
+    "九月": 9, "十月": 10, "十一月": 11, "十二月": 12
+}
+
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的 KataChat 提交记录"
+        msg['Subject'] = "新的 KataChatBot 提交记录"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -34,31 +40,30 @@ def generate_child_metrics():
     return [
         {
             "title": "学习偏好",
-            "labels": ["视觉型", "听觉型", "动手型"],
+            "labels": ["视觉型", "听觉型", "动手实践型"],
             "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
         },
         {
             "title": "学习投入",
-            "labels": ["每日复习", "小组学习", "自主钻研"],
+            "labels": ["每日复习", "小组学习", "独立学习"],
             "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
         },
         {
-            "title": "学术信心",
+            "title": "学术自信",
             "labels": ["数学", "阅读", "专注力"],
             "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
         }
     ]
 
 def generate_child_summary(age, gender, country, metrics):
-    gender_text = "女孩" if gender == "女" else "男孩"
     return [
-        f"在{country}，许多年约 {age} 岁的{gender_text}正在悄悄建立起属于他们的学习习惯与偏好。数据显示，视觉型学习占比为 {metrics[0]['values'][0]}%，遥遥领先；听觉型为 {metrics[0]['values'][1]}%，而动手实践型为 {metrics[0]['values'][2]}%。这些趋势反映出图像、色彩与故事性内容，正成为孩子们理解世界的重要媒介。",
+        f"在{country}，许多年约 {age} 岁的{gender}孩子正在悄悄建立起属于他们的学习习惯与偏好。数据显示，视觉型学习占比为 {metrics[0]['values'][0]}%，遥遥领先；听觉型为 {metrics[0]['values'][1]}%，而动手实践型为 {metrics[0]['values'][2]}%。这些趋势反映出图像、色彩与故事性内容，正成为孩子们理解世界的重要媒介。家长可以善用图画书、视觉游戏与亲子共读时光，打造愉快又深刻的学习体验。",
 
-        f"在学习投入方面，{metrics[1]['values'][0]}% 的孩子已养成每日复习的习惯，是一个令人欣慰的迹象。同时，{metrics[1]['values'][2]}% 倾向于独立钻研，展现出强烈的内在驱动力；但只有 {metrics[1]['values'][1]}% 常参与小组学习，可能反映他们更偏好安静、私密的学习环境。家长不妨尝试用轻松温暖的方式，引导孩子逐步适应与同龄人合作探索的过程。",
+        f"在学习投入方面，{metrics[1]['values'][0]}% 的孩子已养成每日复习的习惯，是一个令人欣慰的迹象。同时，{metrics[1]['values'][2]}% 倾向于独自学习，展现出强烈的自我驱动力。然而，小组学习的比例仅为 {metrics[1]['values'][1]}%，可能反映出孩子在社交学习环境中尚未完全适应。家长可透过亲子复习时间或与信任伙伴的小组共学，慢慢引导孩子接纳并喜爱群体学习。",
 
-        f"从学科信心来看，{metrics[2]['values'][0]}% 对数学有高度信心，阅读为 {metrics[2]['values'][1]}%，而专注力为 {metrics[2]['values'][2]}%。这些数据说明孩子们在逻辑、语言与注意力的发展仍处于不同节奏中。透过情绪管理、规律作息、减少屏幕使用等方式，有助于提升他们的专注能力。",
+        f"在学术信心方面，数学信心高达 {metrics[2]['values'][0]}%，阅读为 {metrics[2]['values'][1]}%，专注力与持续注意力为 {metrics[2]['values'][2]}%。这些数据揭示了孩子在逻辑、语言与情绪控制方面的成长节奏。家长不必急于求成，可透过规律作息、减少荧幕时间、加入音乐或肢体活动，温和引导孩子提升注意力。",
 
-        "这些学习数据，不只是冰冷的数字，而是一段关于成长的故事。对于在新马台的父母与教育者来说，这是一次了解孩子、支持孩子的机会。从视觉化教学到情绪陪伴，从自由探索到小组合作，只要我们用心陪伴，每位孩子都能在学习旅途中找到属于自己的节奏与信心。"
+        "整体来看，这份报告所呈现的不只是分数，而是一个个真实、有潜力的孩子。他们希望大人能看见的不只是成绩，更是他们的努力、情绪与喜好。新马台的家长与教育者可以利用这些洞察，选择适合的教学方式，陪伴孩子在快乐与自信中稳步成长。"
     ]
 
 def generate_summary_html(paragraphs):
@@ -90,15 +95,14 @@ def generate_email_charts(metrics):
 
 def build_email_report(summary_html, charts_html):
     footer = """
-    <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>本报告的洞察来自 KataChat 的 AI 系统分析：</strong><br>
-      1. 我们针对新加坡、马来西亚和台湾儿童学习行为的匿名数据库（经父母授权）<br>
-      2. 第三方可靠来源的教育趋势资料，包括 OpenAI 公布的研究数据集<br>
-      <em>所有数据均经 AI 模型运算，符合 PDPA 隐私法规范。</em>
+    <p style=\"background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;\">
+      <strong>本报告内容由 KataChat 人工智能系统生成，分析自：</strong><br>
+      1. 我们来自新加坡、马来西亚和台湾学生的匿名学习数据（已获家长同意）<br>
+      2. 来自 OpenAI 等可靠机构的非个人化公开教育趋势数据<br>
+      <em>所有数据均遵守 PDPA 隐私保护政策，并经由本地 AI 系统进行统计建模。</em>
     </p>
-    <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>附注：</strong> 您的完整个性化报告将于 24-48 小时内发送至邮箱。
-      若想进一步探讨结果，欢迎与我们 Telegram 或预约 15 分钟简聊。
+    <p style=\"background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;\">
+      <strong>📩 温馨提醒：</strong>完整报告也将于 24–48 小时内发送至您的邮箱。如有任何问题，可直接通过 Telegram 联系我们安排 15 分钟沟通时间。
     </p>
     """
     return summary_html + charts_html + footer
@@ -107,7 +111,7 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        logging.info(f"[analyze_name] 接收到表单数据")
+        logging.info(f"[analyze_name] Payload received")
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
@@ -118,7 +122,11 @@ def analyze_name():
         referrer = data.get("referrer", "").strip()
 
         month_str = str(data.get("dob_month")).strip()
-        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str.capitalize(), "%B").month
+        if month_str.isdigit():
+            month = int(month_str)
+        else:
+            month = CHINESE_MONTHS.get(month_str, 1)
+
         birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
@@ -130,19 +138,19 @@ def analyze_name():
         email_html_result = build_email_report(summary_only_html, charts_html)
 
         email_html = f"""<html><body style=\"font-family:sans-serif;color:#333\">
-        <h2>🎯 新的用户提交：</h2>
+        <h2>🎯 新用户提交信息：</h2>
         <p>
-        👤 <strong>英文姓名：</strong> {name}<br>
-        🈶 <strong>中文姓名：</strong> {chinese_name}<br>
-        ⚧️ <strong>性别：</strong> {gender}<br>
-        🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
-        🕑 <strong>年龄：</strong> {age}<br>
-        🌍 <strong>国家：</strong> {country}<br>
-        📞 <strong>电话：</strong> {phone}<br>
-        📧 <strong>邮箱：</strong> {email}<br>
-        💬 <strong>推荐人：</strong> {referrer}
+        👤 <strong>英文姓名:</strong> {name}<br>
+        🈶 <strong>中文姓名:</strong> {chinese_name}<br>
+        ⚧️ <strong>性别:</strong> {gender}<br>
+        🎂 <strong>出生日期:</strong> {birthdate.date()}<br>
+        🕑 <strong>年龄:</strong> {age}<br>
+        🌍 <strong>国家:</strong> {country}<br>
+        📞 <strong>电话:</strong> {phone}<br>
+        📧 <strong>邮箱:</strong> {email}<br>
+        💬 <strong>推荐人:</strong> {referrer}
         </p>
-        <hr><h2>📊 AI 生成报告</h2>
+        <hr><h2>📊 AI 分析报告</h2>
         {email_html_result}
         </body></html>"""
 
@@ -155,7 +163,7 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.exception("❌ /analyze_name 处理错误")
+        logging.exception("❌ /analyze_name 接口错误")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
