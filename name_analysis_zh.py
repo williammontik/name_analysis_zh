@@ -15,7 +15,7 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
-# ✅ Add support for Chinese month names
+# ✅ 中文月份映射
 CHINESE_MONTHS = {
     "一月": "January", "二月": "February", "三月": "March", "四月": "April",
     "五月": "May", "六月": "June", "七月": "July", "八月": "August",
@@ -59,11 +59,8 @@ def generate_child_metrics():
 def generate_child_summary(age, gender, country, metrics):
     return [
         f"在 {country}，许多年约 {age} 岁的 {gender.lower()} 孩子正踏入学习的初阶阶段，带着安静的决心与独特的偏好。其中，视觉型学习最为显著，占比 {metrics[0]['values'][0]}%；听觉型为 {metrics[0]['values'][1]}%；而动手实践型占比 {metrics[0]['values'][2]}%。这些趋势显示，图像、颜色与故事性内容正在成为孩子们理解世界的重要媒介。父母可以透过图画书、视觉游戏及亲子故事时间，来激发孩子的学习兴趣与想象力。",
-
         f"在深入观察孩子们的学习方式后，一个动人的画面浮现：已有 {metrics[1]['values'][0]}% 的孩子养成每日复习的好习惯；另有 {metrics[1]['values'][2]}% 展现出独立学习时的高度自我驱动。但只有 {metrics[1]['values'][1]}% 经常参与小组学习，或许反映出他们偏好在安静、安全的空间中学习。父母可以尝试通过亲子共学或信任伙伴的小型共学时间，引导孩子逐步适应群体互动。",
-
         f"在核心学科方面，自信程度也展现了清晰的差异。数学的信心值为 {metrics[2]['values'][0]}%，阅读为 {metrics[2]['values'][1]}%，而专注与注意力则为 {metrics[2]['values'][2]}%。这说明孩子们在逻辑、语言与情绪控制方面的发展阶段不一。父母可以利用轻柔的生活节奏、减少屏幕时间，以及融入音乐或身体活动的教学方式，来帮助孩子找到属于自己的节奏。",
-
         "这些学习信号，不只是片段数据，而是孩子成长中的整体故事。在新加坡、马来西亚与台湾，父母与教育者有机会为孩子打造真正以他们为中心的学习支持系统。从适配视觉需求的导师选择，到重视情绪成长的学校机制，每一步的用心，都是帮助孩子快乐成长、自信前行的关键。"
     ]
 
@@ -122,9 +119,15 @@ def analyze_name():
         email = data.get("email", "").strip()
         referrer = data.get("referrer", "").strip()
 
-        month_str_raw = str(data.get("dob_month")).strip()
-        month_str = CHINESE_MONTHS.get(month_str_raw, month_str_raw)
-        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str.capitalize(), "%B").month
+        # ✅ 修复中文月份解析
+        month_raw = str(data.get("dob_month")).strip()
+        if month_raw in CHINESE_MONTHS:
+            month_name = CHINESE_MONTHS[month_raw]
+            month = datetime.strptime(month_name, "%B").month
+        elif month_raw.isdigit():
+            month = int(month_raw)
+        else:
+            month = datetime.strptime(month_raw, "%B").month
 
         birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
         today = datetime.today()
@@ -155,7 +158,6 @@ def analyze_name():
 
         send_email(email_html)
 
-        # Return web display with footer
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
