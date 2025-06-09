@@ -15,7 +15,7 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
-# Chinese month name mapping
+# Chinese month mapping
 CHINESE_MONTHS = {
     "一月": 1, "二月": 2, "三月": 3, "四月": 4,
     "五月": 5, "六月": 6, "七月": 7, "八月": 8,
@@ -35,7 +35,7 @@ def send_email(html_body):
             s.send_message(msg)
         logging.info("✅ Email sent successfully")
     except Exception:
-        logging.exception("❌ Email failed")
+        logging.exception("❌ Email sending failed")
 
 def generate_child_metrics():
     return [
@@ -63,27 +63,51 @@ def generate_summary_html(paragraphs):
 def analyze_name():
     try:
         data = request.get_json(force=True)
+        app.logger.info("📥 Incoming data: %s", data)
+
         name = data.get('name', '').strip()
         chinese_name = data.get('chinese_name', '').strip()
-        gender = data.get('gender', '')
-        country = data.get('country', '')
+        gender = data.get('gender', '').strip()
+        country = data.get('country', '').strip()
         phone = data.get('phone', '').strip()
         email = data.get('email', '').strip()
         referrer = data.get('referrer', '').strip()
+        dob_day = str(data.get("dob_day")).strip()
+        dob_month = str(data.get("dob_month")).strip()
+        dob_year = str(data.get("dob_year")).strip()
 
-        # Parse Chinese month name safely
-        month_str = str(data.get("dob_month")).strip()
-        month = CHINESE_MONTHS.get(month_str, int(month_str)) if not month_str.isdigit() else int(month_str)
-        birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
+        if not (dob_day and dob_month and dob_year):
+            return jsonify({'error': 'Missing birthdate fields.'}), 400
+
+        try:
+            if dob_month in CHINESE_MONTHS:
+                month = CHINESE_MONTHS[dob_month]
+            elif dob_month.isdigit():
+                month = int(dob_month)
+            else:
+                month = datetime.strptime(dob_month, "%B").month
+        except Exception as e:
+            logging.exception("❌ Month parsing failed")
+            return jsonify({'error': f'Month parsing error: {dob_month}'}), 400
+
+        try:
+            birthdate = datetime(int(dob_year), month, int(dob_day))
+        except Exception as e:
+            logging.exception("❌ Birthdate construction failed")
+            return jsonify({'error': 'Invalid birthdate values'}), 400
+
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+
+        if age < 2 or age > 21:
+            return jsonify({'error': f'Age {age} is outside expected range.'}), 400
 
         metrics = generate_child_metrics()
         summary = generate_child_summary(age, gender, country, metrics)
         html_result = generate_summary_html(summary)
 
-        email_html = f'''
-        <html><body style="font-family:sans-serif; color:#333">
+        email_html = f"""
+        <html><body style='font-family:sans-serif; color:#333'>
         <h2>🎯 New Submission:</h2>
         <p>
         👤 Name: {name}<br>
@@ -99,7 +123,7 @@ def analyze_name():
         <hr><h2>📊 AI Summary</h2>
         {html_result}
         </body></html>
-        '''
+        """
 
         send_email(email_html)
 
@@ -108,8 +132,8 @@ def analyze_name():
             "analysis": html_result
         })
     except Exception:
-        logging.exception("❌ Error in /analyze_name")
-        return jsonify({'error': 'Internal server error'}), 500
+        logging.exception("❌ Fatal error in /analyze_name")
+        return jsonify({'error': 'Server crashed while processing'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
