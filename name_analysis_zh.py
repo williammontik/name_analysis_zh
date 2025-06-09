@@ -10,156 +10,125 @@ app = Flask(__name__)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
 
+# === Email Config ===
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
+# === Month Mappings ===
 CHINESE_MONTHS = {
-    "一月": 1, "二月": 2, "三月": 3, "四月": 4,
-    "五月": 5, "六月": 6, "七月": 7, "八月": 8,
-    "九月": 9, "十月": 10, "十一月": 11, "十二月": 12
+    '一月': 1, '二月': 2, '三月': 3, '四月': 4,
+    '五月': 5, '六月': 6, '七月': 7, '八月': 8,
+    '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
 }
 
+ENGLISH_MONTHS = {
+    'January': 1, 'February': 2, 'March': 3, 'April': 4,
+    'May': 5, 'June': 6, 'July': 7, 'August': 8,
+    'September': 9, 'October': 10, 'November': 11, 'December': 12
+}
+
+# === Gender Map (if needed) ===
+CHINESE_GENDER = {
+    '男': 'male',
+    '女': 'female'
+}
+
+# === Send Email Function ===
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的儿童学习分析提交"
+        msg['Subject'] = "新的 KataChatBot 提交记录"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
+
         logging.info("✅ 邮件发送成功")
     except Exception as e:
-        logging.error("❌ 邮件发送失败", exc_info=True)
+        logging.error("❌ 邮件发送失败: %s", str(e))
 
-def generate_child_metrics():
-    return [
-        {
-            "title": "学习偏好",
-            "labels": ["视觉型", "听觉型", "动手型"],
-            "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
-        },
-        {
-            "title": "学习投入",
-            "labels": ["每日复习", "小组学习", "自主学习"],
-            "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
-        },
-        {
-            "title": "学业信心",
-            "labels": ["数学", "阅读", "专注力"],
-            "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
-        }
-    ]
-
-def generate_child_summary(age, gender, country, metrics):
-    return [
-        f"在{country}，许多年约 {age} 岁的{gender}孩子正在悄悄形成自己的学习习惯与喜好。视觉型学习者占比 {metrics[0]['values'][0]}%，听觉型 {metrics[0]['values'][1]}%，动手型 {metrics[0]['values'][2]}%。",
-        f"{metrics[1]['values'][0]}% 的孩子已经建立了每日复习的习惯，{metrics[1]['values'][2]}% 倾向自主学习，小组学习则为 {metrics[1]['values'][1]}%。",
-        f"在学业信心方面，数学为 {metrics[2]['values'][0]}%，阅读为 {metrics[2]['values'][1]}%，专注力为 {metrics[2]['values'][2]}%。",
-        "这些趋势显示孩子们在逻辑、语言与情绪管理上的不同节奏，家长可据此给予更合适的引导。"
-    ]
-
-def generate_summary_html(paragraphs):
-    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 学习总结：</div><br>" + \
-        "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>" for p in paragraphs)
-
-def generate_email_charts(metrics):
-    def make_bar_html(title, labels, values, color):
-        bar_html = f"<h3 style='color:#333; margin-top:30px;'>{title}</h3>"
-        for label, val in zip(labels, values):
-            bar_html += f'''
-            <div style="margin:8px 0;">
-              <div style="font-size:15px; margin-bottom:4px;">{label}</div>
-              <div style="background:#eee; border-radius:10px; overflow:hidden;">
-                <div style="background:{color}; width:{val}%; padding:6px 12px; color:white; font-weight:bold;">
-                  {val}%
-                </div>
-              </div>
-            </div>
-            '''
-        return bar_html
-
-    color_map = ['#5E9CA0', '#FFA500', '#9966FF']
-    charts_html = ""
-    for idx, m in enumerate(metrics):
-        color = color_map[idx % len(color_map)]
-        charts_html += make_bar_html(m["title"], m["labels"], m["values"], color)
-    return charts_html
-
-def build_email_report(summary_html, charts_html):
-    footer = """
-    <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>本报告由 KataChat AI 系统生成，数据来源包括：</strong><br>
-      1. 新加坡、马来西亚、台湾的匿名儿童学习数据库（经家长授权）<br>
-      2. 来自 OpenAI 的教育趋势研究数据与模型分析<br>
-      <em>所有信息均符合 PDPA 隐私保护规范。</em>
-    </p>
-    """
-    return summary_html + charts_html + footer
-
-@app.route("/analyze_name", methods=["POST"])
+# === Analyze Endpoint ===
+@app.route('/analyze_name', methods=['POST'])
 def analyze_name():
     try:
-        data = request.get_json(force=True)
-        name = data.get("name", "").strip()
-        chinese_name = data.get("chinese_name", "").strip()
-        gender = data.get("gender", "").strip()
-        country = data.get("country", "").strip()
-        phone = data.get("phone", "").strip()
-        email = data.get("email", "").strip()
-        referrer = data.get("referrer", "").strip()
-        dob_day = int(data.get("dob_day"))
-        dob_year = int(data.get("dob_year"))
-        dob_month_str = str(data.get("dob_month")).strip()
+        data = request.get_json()
 
-        # 中文月份转换
-        if dob_month_str in CHINESE_MONTHS:
-            dob_month = CHINESE_MONTHS[dob_month_str]
-        elif dob_month_str.isdigit():
-            dob_month = int(dob_month_str)
+        name = data.get("name", "")
+        chinese_name = data.get("chinese_name", "")
+        gender = data.get("gender", "")
+        dob_day = data.get("dob_day", "")
+        dob_month = data.get("dob_month", "")
+        dob_year = data.get("dob_year", "")
+        phone = data.get("phone", "")
+        email = data.get("email", "")
+        country = data.get("country", "")
+        referrer = data.get("referrer", "")
+        chart_images = data.get("chart_images", [])
+
+        # Convert month string to number
+        if dob_month in CHINESE_MONTHS:
+            month_num = CHINESE_MONTHS[dob_month]
+        elif dob_month in ENGLISH_MONTHS:
+            month_num = ENGLISH_MONTHS[dob_month]
         else:
-            return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month_str}"}), 400
+            return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month}"}), 400
 
-        birthdate = datetime(dob_year, dob_month, dob_day)
-        today = datetime.today()
-        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        birthdate = datetime(int(dob_year), month_num, int(dob_day))
+        age = datetime.now().year - birthdate.year
 
-        metrics = generate_child_metrics()
-        summary = generate_child_summary(age, gender, country, metrics)
-        html_summary = generate_summary_html(summary)
-        chart_html = generate_email_charts(metrics)
-        email_body = build_email_report(html_summary, chart_html)
+        # Simulated metrics for testing (can replace with real logic)
+        metrics = [
+            {"title": "学习偏好", "labels": ["视觉型", "听觉型", "动手型"], "values": [50, 35, 11]},
+            {"title": "学习投入", "labels": ["每日复习", "小组学习", "自主学习"], "values": [58, 22, 43]},
+            {"title": "学业信心", "labels": ["数学", "阅读", "专注力"], "values": [67, 58, 58]},
+        ]
 
-        email_html = f"""
-        <html><body style="font-family:sans-serif; color:#333">
-        <h2>🎯 新提交：</h2>
-        <p>
+        # AI summary (simplified for now)
+        summary = f"""🧠 学习总结：
+
+在{country}，许多年约 {age} 岁的{gender}孩子正在悄悄形成自己的学习习惯与喜好。视觉型学习者高达 50%，喜欢图像、颜色与故事形式。听觉型占 35%，动手型则为 11%。
+
+58% 的孩子已经建立了每日复习的习惯，而 43% 倾向自主学习，小组学习仅占 22%。
+
+在学业信心方面，数学为 67%，阅读为 58%，专注力为 58%。
+
+这些趋势显示出孩子在逻辑、语言和情绪管理上的不同节奏，家长可以根据这些特点提供适切的支持。"""
+
+        # Compose email HTML (can embed chart_images here too)
+        html_body = f"""
         👤 姓名：{name}<br>
         🈶 中文名：{chinese_name}<br>
         ⚧️ 性别：{gender}<br>
-        🎂 出生日期：{birthdate.date()}<br>
+        🎂 生日：{dob_year}-{dob_month}-{dob_day}<br>
         🕑 年龄：{age}<br>
         🌍 国家：{country}<br>
         📞 电话：{phone}<br>
         📧 邮箱：{email}<br>
-        💬 推荐人：{referrer}
-        </p>
-        <hr><h2>📊 AI分析结果</h2>
-        {email_body}
-        </body></html>
+        💬 推荐人：{referrer}<br><br>
+        📊 AI 分析<br>{summary}<br><br>
+        本报告由 KataChat AI 系统生成，数据来源包括：<br>
+        1. 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
+        2. OpenAI 教育研究数据与趋势分析<br>
+        所有数据处理均符合 PDPA 数据保护规范。
         """
 
-        send_email(email_html)
-        display_result = build_email_report(html_summary, "")
-        return jsonify({"metrics": metrics, "analysis": display_result})
+        send_email(html_body)
+
+        return jsonify({
+            "analysis": summary,
+            "metrics": metrics
+        })
 
     except Exception as e:
-        logging.exception("❌ 处理分析请求时出错")
-        return jsonify({"error": str(e)}), 500
+        logging.error("❌ 系统错误: %s", str(e))
+        return jsonify({"error": "⚠️ 系统内部错误，请稍后再试"}), 500
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+# === Run locally ===
+if __name__ == '__main__':
+    app.run(debug=True)
