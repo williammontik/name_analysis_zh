@@ -18,7 +18,7 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "New KataChatBot Submission"
+        msg['Subject'] = "新的 KataChat 提交记录"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -26,42 +26,43 @@ def send_email(html_body):
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
-        logging.info("✅ Email sent successfully")
+        logging.info("✅ 邮件发送成功")
     except Exception as e:
-        logging.error("❌ Email sending failed", exc_info=True)
+        logging.error("❌ 邮件发送失败", exc_info=True)
 
 def generate_child_metrics():
     return [
         {
-            "title": "Learning Preferences",
-            "labels": ["Visual", "Auditory", "Kinesthetic"],
+            "title": "学习偏好",
+            "labels": ["视觉型", "听觉型", "动手型"],
             "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
         },
         {
-            "title": "Study Engagement",
-            "labels": ["Daily Review", "Group Study", "Independent Effort"],
+            "title": "学习投入",
+            "labels": ["每日复习", "小组学习", "自主钻研"],
             "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
         },
         {
-            "title": "Academic Confidence",
-            "labels": ["Math", "Reading", "Focus & Attention"],
+            "title": "学术信心",
+            "labels": ["数学", "阅读", "专注力"],
             "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
         }
     ]
 
 def generate_child_summary(age, gender, country, metrics):
+    gender_text = "女孩" if gender == "女" else "男孩"
     return [
-        f"In {country}, many young {gender.lower()} children around the age of {age} are stepping into the early stages of learning with quiet determination and unique preferences. Among them, visual learning stands out as a powerful anchor — with {metrics[0]['values'][0]}% of learners gravitating toward images, colors, and story-based materials to make sense of the world around them. Auditory learning follows at {metrics[0]['values'][1]}%, and kinesthetic approaches like hands-on activities sit at {metrics[0]['values'][2]}%. These figures are not just numbers — they reflect the need to present information in ways that touch the heart and imagination of each child. When a child sees their own world come alive in pictures or guided tales, their curiosity deepens. For parents, this is an opportunity to bring home lessons through picture books, visual games, and shared storytelling moments that make learning both joyful and lasting.",
+        f"在{country}，许多年约 {age} 岁的{gender_text}正在悄悄建立起属于他们的学习习惯与偏好。数据显示，视觉型学习占比为 {metrics[0]['values'][0]}%，遥遥领先；听觉型为 {metrics[0]['values'][1]}%，而动手实践型为 {metrics[0]['values'][2]}%。这些趋势反映出图像、色彩与故事性内容，正成为孩子们理解世界的重要媒介。",
 
-        f"When we look deeper into how these children engage with their studies, a touching pattern emerges. {metrics[1]['values'][0]}% are already building the habit of daily review — a remarkable sign of discipline at such a young age. Meanwhile, {metrics[1]['values'][2]}% show strong signs of self-motivation when learning alone, a trait that speaks volumes about their inner drive. However, only {metrics[1]['values'][1]}% are regularly involved in group study, which may hint at a deeper emotional preference for learning in safe, quiet spaces rather than competitive or chaotic ones. For parents, this raises a gentle question: how can we slowly introduce our children to peer learning in a way that feels supportive, not stressful? Nurturing environments like parent-child revision time, or cozy group storytelling with trusted friends, might be the bridge they need.",
+        f"在学习投入方面，{metrics[1]['values'][0]}% 的孩子已养成每日复习的习惯，是一个令人欣慰的迹象。同时，{metrics[1]['values'][2]}% 倾向于独立钻研，展现出强烈的内在驱动力；但只有 {metrics[1]['values'][1]}% 常参与小组学习，可能反映他们更偏好安静、私密的学习环境。家长不妨尝试用轻松温暖的方式，引导孩子逐步适应与同龄人合作探索的过程。",
 
-        f"Confidence in core subjects reveals another meaningful insight. Math currently shines the brightest at {metrics[2]['values'][0]}%, while Reading scores slightly higher at {metrics[2]['values'][1]}%. The Focus & Attention score at {metrics[2]['values'][2]}% suggests many of these learners are still mastering the art of sustained concentration. But instead of seeing this as a weakness, parents can view it as a developmental rhythm — one that simply needs the right melody to guide it. Emotional regulation, gentle routines, reduced screen time, and creative classroom techniques like music-integrated learning or movement breaks may offer small but powerful shifts. Each child has their own tempo — the key is helping them find it without pressure or comparison.",
+        f"从学科信心来看，{metrics[2]['values'][0]}% 对数学有高度信心，阅读为 {metrics[2]['values'][1]}%，而专注力为 {metrics[2]['values'][2]}%。这些数据说明孩子们在逻辑、语言与注意力的发展仍处于不同节奏中。透过情绪管理、规律作息、减少屏幕使用等方式，有助于提升他们的专注能力。",
 
-        "Together, these learning signals form more than a snapshot — they tell a story. A story of young minds filled with potential, quietly hoping the adults around them will notice not just their results, but their efforts, moods, and learning preferences. Parents and educators in Singapore, Malaysia, and Taiwan now have the chance to craft truly child-centered support. Whether it's choosing tutors who adapt to visual needs, or finding school systems that value emotional growth as much as academic grades — the goal remains the same: to help every child thrive with a sense of balance, self-worth, and joy in the journey."
+        "这些学习数据，不只是冰冷的数字，而是一段关于成长的故事。对于在新马台的父母与教育者来说，这是一次了解孩子、支持孩子的机会。从视觉化教学到情绪陪伴，从自由探索到小组合作，只要我们用心陪伴，每位孩子都能在学习旅途中找到属于自己的节奏与信心。"
     ]
 
 def generate_summary_html(paragraphs):
-    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 Summary:</div><br>" + \
+    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 学习总结：</div><br>" + \
         "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>\n" for p in paragraphs)
 
 def generate_email_charts(metrics):
@@ -69,10 +70,10 @@ def generate_email_charts(metrics):
         bar_html = f"<h3 style='color:#333; margin-top:30px;'>{title}</h3>"
         for label, val in zip(labels, values):
             bar_html += f"""
-            <div style="margin:8px 0;">
-              <div style="font-size:15px; margin-bottom:4px;">{label}</div>
-              <div style="background:#eee; border-radius:10px; overflow:hidden;">
-                <div style="background:{color}; width:{val}%; padding:6px 12px; color:white; font-weight:bold;">
+            <div style=\"margin:8px 0;\">
+              <div style=\"font-size:15px; margin-bottom:4px;\">{label}</div>
+              <div style=\"background:#eee; border-radius:10px; overflow:hidden;\">
+                <div style=\"background:{color}; width:{val}%; padding:6px 12px; color:white; font-weight:bold;\">
                   {val}%
                 </div>
               </div>
@@ -90,14 +91,14 @@ def generate_email_charts(metrics):
 def build_email_report(summary_html, charts_html):
     footer = """
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>The insights in this report are generated by KataChat’s AI systems analyzing:</strong><br>
-      1. Our proprietary database of anonymized learning patterns from Singaporean, Malaysian and Taiwanese students (with parental consent)<br>
-      2. Aggregated, non-personal educational trends from trusted third-party sources including OpenAI’s research datasets<br>
-      <em>All data is processed through our AI models to identify statistically significant patterns while maintaining strict PDPA compliance.</em>
+      <strong>本报告的洞察来自 KataChat 的 AI 系统分析：</strong><br>
+      1. 我们针对新加坡、马来西亚和台湾儿童学习行为的匿名数据库（经父母授权）<br>
+      2. 第三方可靠来源的教育趋势资料，包括 OpenAI 公布的研究数据集<br>
+      <em>所有数据均经 AI 模型运算，符合 PDPA 隐私法规范。</em>
     </p>
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>PS:</strong> Your personalized report will arrive in your inbox within 24-48 hours.
-      If you’d like to explore the findings further, feel free to telegram or book a quick 15-minute chat.
+      <strong>附注：</strong> 您的完整个性化报告将于 24-48 小时内发送至邮箱。
+      若想进一步探讨结果，欢迎与我们 Telegram 或预约 15 分钟简聊。
     </p>
     """
     return summary_html + charts_html + footer
@@ -106,7 +107,7 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        logging.info(f"[analyze_name] Payload received")
+        logging.info(f"[analyze_name] 接收到表单数据")
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
@@ -128,26 +129,25 @@ def analyze_name():
         charts_html = generate_email_charts(metrics)
         email_html_result = build_email_report(summary_only_html, charts_html)
 
-        email_html = f"""<html><body style="font-family:sans-serif;color:#333">
-        <h2>🎯 New User Submission:</h2>
+        email_html = f"""<html><body style=\"font-family:sans-serif;color:#333\">
+        <h2>🎯 新的用户提交：</h2>
         <p>
-        👤 <strong>Full Name:</strong> {name}<br>
-        🈶 <strong>Chinese Name:</strong> {chinese_name}<br>
-        ⚧️ <strong>Gender:</strong> {gender}<br>
-        🎂 <strong>DOB:</strong> {birthdate.date()}<br>
-        🕑 <strong>Age:</strong> {age}<br>
-        🌍 <strong>Country:</strong> {country}<br>
-        📞 <strong>Phone:</strong> {phone}<br>
-        📧 <strong>Email:</strong> {email}<br>
-        💬 <strong>Referrer:</strong> {referrer}
+        👤 <strong>英文姓名：</strong> {name}<br>
+        🈶 <strong>中文姓名：</strong> {chinese_name}<br>
+        ⚧️ <strong>性别：</strong> {gender}<br>
+        🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
+        🕑 <strong>年龄：</strong> {age}<br>
+        🌍 <strong>国家：</strong> {country}<br>
+        📞 <strong>电话：</strong> {phone}<br>
+        📧 <strong>邮箱：</strong> {email}<br>
+        💬 <strong>推荐人：</strong> {referrer}
         </p>
-        <hr><h2>📊 AI-Generated Report</h2>
+        <hr><h2>📊 AI 生成报告</h2>
         {email_html_result}
         </body></html>"""
 
         send_email(email_html)
 
-        # Add footer to web display only
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
@@ -155,7 +155,7 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.exception("❌ Error in /analyze_name")
+        logging.exception("❌ /analyze_name 处理错误")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
