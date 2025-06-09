@@ -24,7 +24,7 @@ CHINESE_MONTHS = {
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的儿童分析提交"
+        msg['Subject'] = "新的儿童学习分析提交"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -57,10 +57,10 @@ def generate_child_metrics():
 
 def generate_child_summary(age, gender, country, metrics):
     return [
-        f"在{country}，许多年约 {age} 岁的{gender}孩子正在悄悄形成自己的学习习惯与喜好。视觉型学习者高达 {metrics[0]['values'][0]}%，喜欢图像、颜色与故事形式。听觉型占 {metrics[0]['values'][1]}%，动手型则为 {metrics[0]['values'][2]}%。",
-        f"{metrics[1]['values'][0]}% 的孩子已经建立了每日复习的习惯，而 {metrics[1]['values'][2]}% 倾向自主学习，小组学习仅占 {metrics[1]['values'][1]}%。",
+        f"在{country}，许多年约 {age} 岁的{gender}孩子正在悄悄形成自己的学习习惯与喜好。视觉型学习者占比 {metrics[0]['values'][0]}%，听觉型 {metrics[0]['values'][1]}%，动手型 {metrics[0]['values'][2]}%。",
+        f"{metrics[1]['values'][0]}% 的孩子已经建立了每日复习的习惯，{metrics[1]['values'][2]}% 倾向自主学习，小组学习则为 {metrics[1]['values'][1]}%。",
         f"在学业信心方面，数学为 {metrics[2]['values'][0]}%，阅读为 {metrics[2]['values'][1]}%，专注力为 {metrics[2]['values'][2]}%。",
-        "这些趋势显示出孩子在逻辑、语言和情绪管理上的不同节奏，家长可以根据这些特点提供适切的支持。"
+        "这些趋势显示孩子们在逻辑、语言与情绪管理上的不同节奏，家长可据此给予更合适的引导。"
     ]
 
 def generate_summary_html(paragraphs):
@@ -94,9 +94,9 @@ def build_email_report(summary_html, charts_html):
     footer = """
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
       <strong>本报告由 KataChat AI 系统生成，数据来源包括：</strong><br>
-      1. 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
-      2. OpenAI 教育研究数据与趋势分析<br>
-      <em>所有数据处理均符合 PDPA 数据保护规范。</em>
+      1. 新加坡、马来西亚、台湾的匿名儿童学习数据库（经家长授权）<br>
+      2. 来自 OpenAI 的教育趋势研究数据与模型分析<br>
+      <em>所有信息均符合 PDPA 隐私保护规范。</em>
     </p>
     """
     return summary_html + charts_html + footer
@@ -112,12 +112,11 @@ def analyze_name():
         phone = data.get("phone", "").strip()
         email = data.get("email", "").strip()
         referrer = data.get("referrer", "").strip()
-
         dob_day = int(data.get("dob_day"))
         dob_year = int(data.get("dob_year"))
         dob_month_str = str(data.get("dob_month")).strip()
 
-        # ✅ Safe month parsing
+        # 中文月份转换
         if dob_month_str in CHINESE_MONTHS:
             dob_month = CHINESE_MONTHS[dob_month_str]
         elif dob_month_str.isdigit():
@@ -135,31 +134,31 @@ def analyze_name():
         chart_html = generate_email_charts(metrics)
         email_body = build_email_report(html_summary, chart_html)
 
-        full_email = f"""
-        <html><body style="font-family:sans-serif;color:#333">
+        email_html = f"""
+        <html><body style="font-family:sans-serif; color:#333">
         <h2>🎯 新提交：</h2>
         <p>
         👤 姓名：{name}<br>
         🈶 中文名：{chinese_name}<br>
         ⚧️ 性别：{gender}<br>
-        🎂 生日：{birthdate.date()}<br>
+        🎂 出生日期：{birthdate.date()}<br>
         🕑 年龄：{age}<br>
         🌍 国家：{country}<br>
         📞 电话：{phone}<br>
         📧 邮箱：{email}<br>
         💬 推荐人：{referrer}
         </p>
-        <hr><h2>📊 AI 分析</h2>
+        <hr><h2>📊 AI分析结果</h2>
         {email_body}
         </body></html>
         """
 
-        send_email(full_email)
+        send_email(email_html)
         display_result = build_email_report(html_summary, "")
         return jsonify({"metrics": metrics, "analysis": display_result})
 
     except Exception as e:
-        logging.exception("❌ 处理请求时出错")
+        logging.exception("❌ 处理分析请求时出错")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
