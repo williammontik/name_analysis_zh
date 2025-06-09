@@ -6,7 +6,6 @@ from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-# === Setup ===
 app = Flask(__name__)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
@@ -16,14 +15,13 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
-# === Chinese Month Mapping (Simplified) ===
+# ✅ Chinese month mapping fix
 CHINESE_MONTHS = {
     '一月': 1, '二月': 2, '三月': 3, '四月': 4,
     '五月': 5, '六月': 6, '七月': 7, '八月': 8,
     '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
 }
 
-# === Email Sender ===
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
@@ -39,7 +37,6 @@ def send_email(html_body):
     except Exception as e:
         logging.error("❌ Email sending failed", exc_info=True)
 
-# === Metric Generator ===
 def generate_child_metrics():
     return [
         {
@@ -59,7 +56,6 @@ def generate_child_metrics():
         }
     ]
 
-# === Summary Generator ===
 def generate_child_summary(age, gender, country, metrics):
     return [
         f"In {country}, many young {gender.lower()} children around the age of {age} are stepping into the early stages of learning with quiet determination and unique preferences. Among them, visual learning stands out as a powerful anchor — with {metrics[0]['values'][0]}% of learners gravitating toward images, colors, and story-based materials to make sense of the world around them. Auditory learning follows at {metrics[0]['values'][1]}%, and kinesthetic approaches like hands-on activities sit at {metrics[0]['values'][2]}%. These figures are not just numbers — they reflect the need to present information in ways that touch the heart and imagination of each child. When a child sees their own world come alive in pictures or guided tales, their curiosity deepens. For parents, this is an opportunity to bring home lessons through picture books, visual games, and shared storytelling moments that make learning both joyful and lasting.",
@@ -107,7 +103,7 @@ def build_email_report(summary_html, charts_html):
       <em>All data is processed through our AI models to identify statistically significant patterns while maintaining strict PDPA compliance.</em>
     </p>
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-      <strong>PS:</strong> Your personalized report will arrive in your inbox within 24-48 hours.
+      <strong>PS:</strong> Your personalized report will arrive in your inbox within 24–48 hours.
       If you’d like to explore the findings further, feel free to telegram or book a quick 15-minute chat.
     </p>
     """
@@ -127,7 +123,7 @@ def analyze_name():
         email = data.get("email", "").strip()
         referrer = data.get("referrer", "").strip()
 
-        # === Month Fix for zh ===
+        # ✅ Fixed month parsing
         month_str = str(data.get("dob_month")).strip()
         if month_str.isdigit():
             month = int(month_str)
