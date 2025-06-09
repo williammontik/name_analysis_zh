@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+# === App Setup ===
 app = Flask(__name__)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
@@ -22,24 +23,23 @@ CHINESE_MONTHS = {
     '五月': 5, '六月': 6, '七月': 7, '八月': 8,
     '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
 }
-
 ENGLISH_MONTHS = {
     'January': 1, 'February': 2, 'March': 3, 'April': 4,
     'May': 5, 'June': 6, 'July': 7, 'August': 8,
     'September': 9, 'October': 10, 'November': 11, 'December': 12
 }
 
-# === Gender Map (if needed) ===
+# === Gender Mapping ===
 CHINESE_GENDER = {
-    '男': 'male',
-    '女': 'female'
+    '男': '男孩',
+    '女': '女孩'
 }
 
-# === Send Email Function ===
+# === Send Email ===
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的 KataChatBot 提交记录"
+        msg['Subject'] = "新的 KataChatBot 提交記錄"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -48,12 +48,11 @@ def send_email(html_body):
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
-
-        logging.info("✅ 邮件发送成功")
+        logging.info("✅ 郵件發送成功")
     except Exception as e:
-        logging.error("❌ 邮件发送失败: %s", str(e))
+        logging.error("❌ 郵件發送失敗: %s", str(e))
 
-# === Analyze Endpoint ===
+# === Main Analysis Endpoint ===
 @app.route('/analyze_name', methods=['POST'])
 def analyze_name():
     try:
@@ -71,67 +70,74 @@ def analyze_name():
         referrer = data.get("referrer", "")
         chart_images = data.get("chart_images", [])
 
-        # Convert month string to number
+        # Convert month string
         if dob_month in CHINESE_MONTHS:
             month_num = CHINESE_MONTHS[dob_month]
         elif dob_month in ENGLISH_MONTHS:
             month_num = ENGLISH_MONTHS[dob_month]
         else:
-            return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month}"}), 400
+            return jsonify({"error": f"❌ 無法識別的月份格式: {dob_month}"}), 400
 
         birthdate = datetime(int(dob_year), month_num, int(dob_day))
-        today = datetime.today()
-        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        age = datetime.now().year - birthdate.year
+        gender_label = CHINESE_GENDER.get(gender, "孩子")
 
-        # Simulated metrics
+        # === Simulated Metrics ===
         metrics = [
-            {"title": "学习偏好", "labels": ["视觉型", "听觉型", "动手型"], "values": [50, 35, 11]},
-            {"title": "学习投入", "labels": ["每日复习", "小组学习", "自主学习"], "values": [58, 22, 43]},
-            {"title": "学业信心", "labels": ["数学", "阅读", "专注力"], "values": [67, 58, 58]},
+            {"title": "學習偏好", "labels": ["視覺型", "聽覺型", "動手型"], "values": [50, 35, 11]},
+            {"title": "學習投入", "labels": ["每日複習", "小組學習", "自主學習"], "values": [58, 22, 43]},
+            {"title": "學業信心", "labels": ["數學", "閱讀", "專注力"], "values": [67, 58, 58]},
         ]
 
-        # AI summary (basic)
-        summary = f"""🧠 学习总结：<br><br>
-在{country}，许多年约 {age} 岁的{gender}孩子正在悄悄形成自己的学习习惯与喜好。视觉型学习者高达 50%，喜欢图像、颜色与故事形式。听觉型占 35%，动手型则为 11%。<br><br>
-58% 的孩子已经建立了每日复习的习惯，而 43% 倾向自主学习，小组学习仅占 22%。<br><br>
-在学业信心方面，数学为 67%，阅读为 58%，专注力为 58%。<br><br>
-这些趋势显示出孩子在逻辑、语言和情绪管理上的不同节奏，家长可以根据这些特点提供适切的支持。"""
+        # === Deep Summary Paragraphs ===
+        para1 = f"在{country}，許多年約 {age} 歲的{gender_label}正在慢慢建立屬於自己的學習習慣與風格。從資料看來，視覺型學習偏好佔了 50%，說明圖片、顏色與圖像化內容對他們有明顯吸引力；聽覺型佔 35%，而動手實踐型則為 11%。這反映了此年齡段孩子在資訊吸收方式上的多元差異。"
+        para2 = "在學習投入上，有 58% 的孩子已養成每日複習的好習慣，這是一個相當正面的訊號；而 43% 偏好自主學習，顯示他們具備自我驅動的潛力；至於小組學習則較少，僅 22%，這可能暗示著人際互動方面仍在培養中。"
+        para3 = "學業信心方面，數學達到 67%，顯示他們對邏輯與計算有一定掌握；閱讀方面為 58%，略顯保守，可能與語言環境或詞彙基礎有關；而專注力則為 58%，反映孩子在持續注意力上的發展仍有提升空間。"
+        para4 = "綜合來看，這些趨勢說明孩子正處於探索與成長的交叉點，家長可以根據其偏好與特質，提供更貼近需求的支持環境與學習資源，從而協助他們更自在地發揮潛能。"
 
-        footer = """
-        <p style='background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B;'>
-          <strong>本报告由 KataChat AI 系统生成，数据来源包括：</strong><br>
-          1. 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
-          2. OpenAI 教育研究数据与趋势分析<br>
-          <em>所有数据处理均符合 PDPA 数据保护规范。</em>
-        </p>
-        <p style='background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B;'>
-          <strong>附言：</strong>完整分析报告将于 24-48 小时内发送至您的邮箱。如需进一步了解，可加入 Telegram 或预约 15 分钟交流。
-        </p>
-        """
+        summary = f"🧠 學習總結：\n\n{para1}\n\n{para2}\n\n{para3}\n\n{para4}"
 
+        # === Email Chart Blocks ===
+        chart_blocks = ""
+        for img in chart_images:
+            chart_blocks += f'<img src="data:image/png;base64,{img}" style="width:100%; max-width:480px; margin-top:20px;"><br>'
+
+        # === Email HTML ===
         html_body = f"""
         👤 姓名：{name}<br>
         🈶 中文名：{chinese_name}<br>
-        ⚧️ 性别：{gender}<br>
+        ⚧️ 性別：{gender}<br>
         🎂 生日：{dob_year}-{dob_month}-{dob_day}<br>
-        🕑 年龄：{age}<br>
-        🌍 国家：{country}<br>
-        📞 电话：{phone}<br>
-        📧 邮箱：{email}<br>
-        💬 推荐人：{referrer}<br><br>
-        📊 AI 分析<br>{summary}<br><br>{footer}
+        🕑 年齡：{age}<br>
+        🌍 國家：{country}<br>
+        📞 電話：{phone}<br>
+        📧 郵箱：{email}<br>
+        💬 推薦人：{referrer}<br><br>
+
+        📊 AI 分析：<br>{summary.replace('\n', '<br>')}<br><br>
+        {chart_blocks}
+
+        <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">
+        本報告由 KataChat AI 系統生成，數據來源包括：<br>
+        1. 來自新加坡、馬來西亞、台灣的匿名學習行為資料庫（已獲家長授權）<br>
+        2. OpenAI 教育研究數據與趨勢分析<br>
+        所有數據處理均符合 PDPA 資料保護規範。
+        </div>
         """
 
+        # === Send Email ===
         send_email(html_body)
 
+        # === Return to frontend ===
         return jsonify({
-            "analysis": summary + footer,
+            "analysis": summary,
             "metrics": metrics
         })
 
     except Exception as e:
-        logging.error("❌ 系统错误: %s", str(e))
-        return jsonify({"error": "⚠️ 系统内部错误，请稍后再试"}), 500
+        logging.error("❌ 系統錯誤: %s", str(e))
+        return jsonify({"error": "⚠️ 系統內部錯誤，請稍後再試"}), 500
 
+# === Run Locally ===
 if __name__ == '__main__':
     app.run(debug=True)
