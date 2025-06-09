@@ -1,55 +1,44 @@
 # -*- coding: utf-8 -*-
-import os, smtplib, logging, random
+import os, smtplib, logging, random, base64
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import openai
 
 app = Flask(__name__)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
 
+# === OpenAI 设置 ===
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# === 邮件设置 ===
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
+# === 月份映射（中英皆可）===
 CHINESE_MONTHS = {
     '一月': 1, '二月': 2, '三月': 3, '四月': 4,
     '五月': 5, '六月': 6, '七月': 7, '八月': 8,
     '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
 }
+
 ENGLISH_MONTHS = {
     'January': 1, 'February': 2, 'March': 3, 'April': 4,
     'May': 5, 'June': 6, 'July': 7, 'August': 8,
     'September': 9, 'October': 10, 'November': 11, 'December': 12
 }
 
-CHINESE_GENDER = {
-    '男': '男孩',
-    '女': '女孩'
-}
-
-def send_email(html_body):
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的 KataChatBot 提交記錄"
-        msg['From'] = SMTP_USERNAME
-        msg['To'] = SMTP_USERNAME
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.send_message(msg)
-        logging.info("✅ 郵件發送成功")
-    except Exception as e:
-        logging.error("❌ 郵件發送失敗: %s", str(e))
-
 @app.route('/analyze_name', methods=['POST'])
 def analyze_name():
     try:
         data = request.get_json()
+
         name = data.get("name", "")
         chinese_name = data.get("chinese_name", "")
         gender = data.get("gender", "")
@@ -62,58 +51,87 @@ def analyze_name():
         referrer = data.get("referrer", "")
         chart_images = data.get("chart_images", [])
 
+        # 月份解析
         if dob_month in CHINESE_MONTHS:
             month_num = CHINESE_MONTHS[dob_month]
         elif dob_month in ENGLISH_MONTHS:
             month_num = ENGLISH_MONTHS[dob_month]
         else:
-            return jsonify({"error": f"❌ 無法識別的月份格式: {dob_month}"}), 400
+            return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month}"}), 400
 
         birthdate = datetime(int(dob_year), month_num, int(dob_day))
         age = datetime.now().year - birthdate.year
-        gender_label = CHINESE_GENDER.get(gender, "孩子")
 
+        # 随机图表数据
         metrics = [
-            {"title": "學習偏好", "labels": ["視覺型", "聽覺型", "動手型"], "values": [50, 35, 11]},
-            {"title": "學習投入", "labels": ["每日複習", "小組學習", "自主學習"], "values": [58, 22, 43]},
-            {"title": "學業信心", "labels": ["數學", "閱讀", "專注力"], "values": [67, 58, 58]},
+            {"title": "学习偏好", "labels": ["视觉型", "听觉型", "动手型"], "values": random.sample(range(20, 80), 3)},
+            {"title": "学习投入", "labels": ["每日复习", "小组学习", "自主学习"], "values": random.sample(range(20, 80), 3)},
+            {"title": "学业信心", "labels": ["数学", "阅读", "专注力"], "values": random.sample(range(20, 80), 3)},
         ]
 
-        para1 = f"在{country}，許多年約 {age} 歲的{gender_label}正在慢慢建立屬於自己的學習習慣與風格。從資料看來，視覺型學習偏好佔了 50%，說明圖片、顏色與圖像化內容對他們有明顯吸引力；聽覺型佔 35%，而動手實踐型則為 11%。這反映了此年齡段孩子在資訊吸收方式上的多元差異。"
-        para2 = "在學習投入上，有 58% 的孩子已養成每日複習的好習慣，這是一個相當正面的訊號；而 43% 偏好自主學習，顯示他們具備自我驅動的潛力；至於小組學習則較少，僅 22%，這可能暗示著人際互動方面仍在培養中。"
-        para3 = "學業信心方面，數學達到 67%，顯示他們對邏輯與計算有一定掌握；閱讀方面為 58%，略顯保守，可能與語言環境或詞彙基礎有關；而專注力則為 58%，反映孩子在持續注意力上的發展仍有提升空間。"
-        para4 = "綜合來看，這些趨勢說明孩子正處於探索與成長的交叉點，家長可以根據其偏好與特質，提供更貼近需求的支持環境與學習資源，從而協助他們更自在地發揮潛能。"
+        # GPT 生成中文学习总结
+        chart_values_text = "; ".join([
+            f"{m['title']}：{', '.join([f'{l} {v}%' for l, v in zip(m['labels'], m['values'])])}"
+            for m in metrics
+        ])
+        gpt_prompt = f"""
+你是一个教育顾问，请基于以下资料，为一位住在{country}、{age}岁的{gender}儿童撰写四段式、温暖、有洞察力的中文学习总结。请参考这些数值：{chart_values_text}。
+总结需充满情感与启发力，避免使用模板或列表，文字要自然流畅。
+"""
+        gpt_response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": gpt_prompt}],
+            temperature=0.7
+        )
+        summary = gpt_response.choices[0].message.content.strip()
 
-        summary = f"🧠 學習總結：\n\n{para1}\n\n{para2}\n\n{para3}\n\n{para4}"
-        formatted_summary = summary.replace('\n', '<br>')
-
-        chart_blocks = ""
-        for img in chart_images:
-            chart_blocks += f'<img src="data:image/png;base64,{img}" style="width:100%; max-width:480px; margin-top:20px;"><br>'
-
+        # 构建邮件内容
         html_body = f"""
-        👤 姓名：{name}<br>
-        🈶 中文名：{chinese_name}<br>
-        ⚧️ 性別：{gender}<br>
-        🎂 生日：{dob_year}-{dob_month}-{dob_day}<br>
-        🕑 年齡：{age}<br>
-        🌍 國家：{country}<br>
-        📞 電話：{phone}<br>
-        📧 郵箱：{email}<br>
-        💬 推薦人：{referrer}<br><br>
-
-        📊 AI 分析：<br>{formatted_summary}<br><br>
-        {chart_blocks}
-
-        <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">
-        本報告由 KataChat AI 系統生成，數據來源包括：<br>
-        1. 來自新加坡、馬來西亞、台灣的匿名學習行為資料庫（已獲家長授權）<br>
-        2. OpenAI 教育研究數據與趨勢分析<br>
-        所有數據處理均符合 PDPA 資料保護規範。
+        <div style="font-family:'Microsoft YaHei',sans-serif;font-size:16px;">
+        <p>👧 姓名：{name}</p>
+        <p>🈶 中文名：{chinese_name}</p>
+        <p>⚧️ 性别：{gender}</p>
+        <p>🎂 生日：{dob_year}年{dob_month}{dob_day}日</p>
+        <p>🕑 年龄：{age}</p>
+        <p>🌍 国家：{country}</p>
+        <p>📞 电话：{phone}</p>
+        <p>📧 邮箱：{email}</p>
+        <p>💬 推荐人：{referrer}</p>
+        <hr>
+        <p><strong>🧠 学习总结：</strong><br>{summary.replace('\n', '<br>')}</p>
+        <hr>
+        <p style="font-size:14px;color:#555;">
+        本报告由 KataChat AI 系统生成，数据来源包括：<br>
+        · 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
+        · OpenAI 教育研究数据与趋势分析<br>
+        所有数据处理均符合 PDPA 数据保护规范。
+        </p>
         </div>
         """
 
-        send_email(html_body)
+        # 发送邮件
+        msg = MIMEMultipart('related')
+        msg['Subject'] = "来自 KataChat 的学习报告"
+        msg['From'] = SMTP_USERNAME
+        msg['To'] = SMTP_USERNAME
+
+        msg_alt = MIMEMultipart('alternative')
+        msg.attach(msg_alt)
+        msg_alt.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+        # 附加图表
+        for i, img_data in enumerate(chart_images):
+            if img_data.startswith("data:image/png;base64,"):
+                img_data_clean = img_data.split(",")[1]
+                image = MIMEImage(base64.b64decode(img_data_clean))
+                image.add_header('Content-ID', f'<chart{i}>')
+                image.add_header('Content-Disposition', 'inline', filename=f'chart{i}.png')
+                msg.attach(image)
+
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.send_message(msg)
 
         return jsonify({
             "analysis": summary,
@@ -121,8 +139,9 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.error("❌ 系統錯誤: %s", str(e))
-        return jsonify({"error": "⚠️ 系統內部錯誤，請稍後再試"}), 500
+        logging.error("❌ 系统错误: %s", str(e))
+        return jsonify({"error": "⚠️ 系统内部错误，请稍后再试"}), 500
 
+# === 本地运行 ===
 if __name__ == '__main__':
     app.run(debug=True)
