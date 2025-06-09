@@ -1,76 +1,162 @@
 # -*- coding: utf-8 -*-
-import os, smtplib, logging, random, unicodedata
+import os, smtplib, logging, random
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import openai
+import base64
+from io import BytesIO
+import matplotlib.pyplot as plt
 
+# === Setup ===
 app = Flask(__name__)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
+# === Chinese Mappings ===
 CHINESE_MONTHS = {
     '一月': 1, '二月': 2, '三月': 3, '四月': 4,
     '五月': 5, '六月': 6, '七月': 7, '八月': 8,
     '九月': 9, '十月': 10, '十一月': 11, '十二月': 12
 }
+CHINESE_GENDER = {
+    '男': 'male',
+    '女': 'female'
+}
 
-def normalize_month(s):
-    if s is None:
-        return ''
-    s = s.strip()
-    s = unicodedata.normalize('NFKC', s)
-    return s
+# === Helper: Age Calculation ===
+def compute_age(data):
+    day = data.get("dob_day")
+    month_str = str(data.get("dob_month")).strip()
+    year = data.get("dob_year")
 
-def send_email(html_body):
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "New KataChatBot Submission"
-        msg['From'] = SMTP_USERNAME
-        msg['To'] = SMTP_USERNAME
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.send_message(msg)
-        logging.info("✅ Email sent successfully")
-    except Exception as e:
-        logging.error("❌ Email failed to send: %s", str(e))
+    if not (day and month_str and year):
+        return None
 
-@app.route("/analyze_name", methods=["POST"])
-def analyze_name():
-    data = request.get_json()
-    name = data.get("full_name", "").strip()
-    dob_day = int(data.get("dob_day", 1))
-    dob_month_raw = data.get("dob_month")
-    dob_month = normalize_month(dob_month_raw)
-    dob_year = int(data.get("dob_year", 2000))
-
-    if dob_month in CHINESE_MONTHS:
-        month = CHINESE_MONTHS[dob_month]
-    elif dob_month.isdigit():
-        month = int(dob_month)
+    # Detect month (digit, zh, en)
+    if month_str.isdigit():
+        month = int(month_str)
+    elif month_str in CHINESE_MONTHS:
+        month = CHINESE_MONTHS[month_str]
     else:
         try:
-            month = datetime.strptime(dob_month, "%B").month
-        except Exception as e:
-            return jsonify({"error": f"Invalid month: {dob_month}"}), 400
+            month = datetime.strptime(month_str, "%B").month  # 'March'
+        except:
+            raise ValueError(f"time data '{month_str}' does not match format '%B'")
+
+    dob = datetime(int(year), int(month), int(day))
+    today = datetime.now()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+# === Helper: Chart Generator ===
+def generate_chart(title, labels, values):
+    fig, ax = plt.subplots(figsize=(5, 2.5))
+    ax.bar(labels, values, color=['#5E9CA0', '#FF9F40', '#9966FF'])
+    ax.set_title(title)
+    ax.set_ylim(0, 100)
+    plt.tight_layout()
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode()
+
+# === Route ===
+@app.route("/analyze_name", methods=["POST"])
+def analyze_name():
+    data = request.json
 
     try:
-        birthdate = datetime(dob_year, month, dob_day)
+        name = data.get("name", "").strip()
+        chinese_name = data.get("chinese_name", "").strip()
+        gender_raw = data.get("gender", "")
+        gender = CHINESE_GENDER.get(gender_raw, gender_raw.lower())
+        age = compute_age(data)
+        country = data.get("country", "Singapore").strip()
+        email = data.get("email", "").strip()
+
+        # Fake data for simulation
+        learning_styles = [random.randint(50, 80), random.randint(20, 40), random.randint(10, 30)]
+        study_habits = [random.randint(40, 70), random.randint(20, 50), random.randint(30, 60)]
+        confidence = [random.randint(50, 90), random.randint(40, 70), random.randint(30, 60)]
+
+        metrics = [
+            {"title": "学习风格", "labels": ["视觉型", "听觉型", "动手型"], "values": learning_styles},
+            {"title": "学习投入", "labels": ["每日复习", "小组学习", "独立学习"], "values": study_habits},
+            {"title": "学习信心", "labels": ["数学", "阅读", "专注力"], "values": confidence}
+        ]
+
+        charts_html = ""
+        for m in metrics:
+            img = generate_chart(m["title"], m["labels"], m["values"])
+            charts_html += f"<h4>{m['title']}</h4><img src='data:image/png;base64,{img}' style='max-width:100%;'><br><br>"
+
+        # 🧠 AI Summary (Chinese, Deep Style)
+        analysis_prompt = f"""请根据以下数据生成一份详细的儿童学习分析总结，语气温暖而深入，适合家长阅读：
+
+国家：{country}
+年龄：{age}岁
+性别：{gender_raw}
+视觉型：{learning_styles[0]}%
+听觉型：{learning_styles[1]}%
+动手型：{learning_styles[2]}%
+每日复习：{study_habits[0]}%
+小组学习：{study_habits[1]}%
+独立学习：{study_habits[2]}%
+数学信心：{confidence[0]}%
+阅读信心：{confidence[1]}%
+专注力信心：{confidence[2]}%
+
+请分成 4 段文字，每段约 3–5 行，围绕孩子的学习偏好、投入方式、自信心表现以及家长可提供的支持。"""
+
+        ai_response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": analysis_prompt}],
+            temperature=0.7
+        )
+        analysis = ai_response.choices[0].message.content.strip()
+
+        # === Email Report ===
+        email_body = f"""
+        <html>
+        <body>
+        <h2>🎓 孩子学习分析报告</h2>
+        <p><strong>姓名：</strong>{name}（{chinese_name}）<br>
+        <strong>年龄：</strong>{age} 岁<br>
+        <strong>国家：</strong>{country}<br>
+        <strong>性别：</strong>{gender_raw}</p>
+        {charts_html}
+        <div style="margin-top:20px; line-height:1.6; font-size:16px;">{analysis}</div>
+        <hr><p><strong>Insights generated by KataChatBot AI.</strong><br>📧 kata.chatbot@gmail.com</p>
+        </body>
+        </html>
+        """
+        send_email(email_body)
+
+        return jsonify({
+            "metrics": metrics,
+            "analysis": analysis
+        })
+
     except Exception as e:
-        return jsonify({"error": "Invalid date."}), 400
+        return jsonify({"error": f"{str(e)}"}), 400
 
-    # Placeholder response for success
-    summary = f"<p>Full Name: {name}</p><p>Birthdate: {birthdate.strftime('%Y-%m-%d')}</p>"
-    send_email(summary)
-    return jsonify({"message": "Month parsed and email sent successfully.", "birthdate": birthdate.strftime("%Y-%m-%d")})
-
-if __name__ == "__main__":
-    app.run(debug=True)
+# === Email Sender ===
+def send_email(html_body):
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = "新的 KataChatBot 提交记录"
+    msg['From'] = SMTP_USERNAME
+    msg['To'] = SMTP_USERNAME
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        server.send_message(msg)
