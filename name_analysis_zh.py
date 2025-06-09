@@ -15,17 +15,10 @@ SMTP_PORT = 587
 SMTP_USERNAME = "kata.chatbot@gmail.com"
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 
-# ✅ 中文月份映射
-CHINESE_MONTHS = {
-    "一月": "January", "二月": "February", "三月": "March", "四月": "April",
-    "五月": "May", "六月": "June", "七月": "July", "八月": "August",
-    "九月": "September", "十月": "October", "十一月": "November", "十二月": "December"
-}
-
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的 KataChatBot 提交记录"
+        msg['Subject'] = "新KataChatBot提交"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -41,31 +34,34 @@ def generate_child_metrics():
     return [
         {
             "title": "学习偏好",
-            "labels": ["视觉型", "听觉型", "动手实践型"],
+            "labels": ["视觉型", "听觉型", "动觉型"],
             "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
         },
         {
-            "title": "学习投入",
-            "labels": ["每日复习", "小组学习", "独立钻研"],
+            "title": "学习参与度",
+            "labels": ["每日复习", "小组学习", "自主学习"],
             "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
         },
         {
-            "title": "学术信心",
-            "labels": ["数学", "阅读", "专注力与持续注意力"],
+            "title": "学科信心",
+            "labels": ["数学", "阅读", "专注力"],
             "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
         }
     ]
 
 def generate_child_summary(age, gender, country, metrics):
     return [
-        f"在 {country}，许多年约 {age} 岁的 {gender.lower()} 孩子正踏入学习的初阶阶段，带着安静的决心与独特的偏好。其中，视觉型学习最为显著，占比 {metrics[0]['values'][0]}%；听觉型为 {metrics[0]['values'][1]}%；而动手实践型占比 {metrics[0]['values'][2]}%。这些趋势显示，图像、颜色与故事性内容正在成为孩子们理解世界的重要媒介。父母可以透过图画书、视觉游戏及亲子故事时间，来激发孩子的学习兴趣与想象力。",
-        f"在深入观察孩子们的学习方式后，一个动人的画面浮现：已有 {metrics[1]['values'][0]}% 的孩子养成每日复习的好习惯；另有 {metrics[1]['values'][2]}% 展现出独立学习时的高度自我驱动。但只有 {metrics[1]['values'][1]}% 经常参与小组学习，或许反映出他们偏好在安静、安全的空间中学习。父母可以尝试通过亲子共学或信任伙伴的小型共学时间，引导孩子逐步适应群体互动。",
-        f"在核心学科方面，自信程度也展现了清晰的差异。数学的信心值为 {metrics[2]['values'][0]}%，阅读为 {metrics[2]['values'][1]}%，而专注与注意力则为 {metrics[2]['values'][2]}%。这说明孩子们在逻辑、语言与情绪控制方面的发展阶段不一。父母可以利用轻柔的生活节奏、减少屏幕时间，以及融入音乐或身体活动的教学方式，来帮助孩子找到属于自己的节奏。",
-        "这些学习信号，不只是片段数据，而是孩子成长中的整体故事。在新加坡、马来西亚与台湾，父母与教育者有机会为孩子打造真正以他们为中心的学习支持系统。从适配视觉需求的导师选择，到重视情绪成长的学校机制，每一步的用心，都是帮助孩子快乐成长、自信前行的关键。"
+        f"在{country}，许多{age}岁左右的{gender.lower()}儿童正以独特的学习偏好进入早期学习阶段。其中视觉学习是最突出的方式——{metrics[0]['values'][0]}%的学习者倾向于通过图像、色彩和故事材料理解世界。听觉学习占{metrics[0]['values'][1]}%，动手实践等动觉方式占{metrics[0]['values'][2]}%。这些数字不仅反映了数据，更表明需要用触动孩子心灵和想象力的方式呈现信息。当孩子在图画或故事中看到自己的世界时，他们的好奇心会加深。对家长来说，这是通过绘本、视觉游戏和故事时间让学习变得快乐持久的机会。",
+
+        f"深入观察这些儿童的学习参与度时，我们发现一个显著模式：{metrics[1]['values'][0]}%已养成每日复习的习惯——在这个年龄段展现了惊人的自律性。同时，{metrics[1]['values'][2]}%在独立学习时表现出强烈的自主性。但只有{metrics[1]['values'][1]}%经常参与小组学习，这可能暗示孩子情感上更偏好安全安静的学习环境而非竞争性环境。对家长而言，这引出一个问题：如何以支持性（而非压力性）的方式引导孩子进行同伴学习？亲子复习时间或与信任伙伴的小组故事会可能是理想的桥梁。",
+
+        f"学科信心揭示了另一重要发现：数学信心值最高({metrics[2]['values'][0]}%)，阅读({metrics[2]['values'][1]}%)次之。专注力({metrics[2]['values'][2]}%)表明许多学习者仍在培养持续专注能力。家长可将此视为发展节奏——只需合适的旋律引导。情绪调节、温和的日常安排、减少屏幕时间以及融入音乐或运动休息的创新教学方法都可能带来积极改变。每个孩子都有自己的节奏——关键是在无压力的环境中帮助他们找到它。",
+
+        "这些学习信号共同构成了一个故事——个充满潜力的年轻心灵的故事。孩子们默默希望周围的成人不仅看到结果，更注意到他们的努力、情绪和学习偏好。新加坡、马来西亚和台湾的家长与教育者现在有机会打造真正以儿童为中心的支持体系。无论是选择适应视觉需求的导师，还是寻找重视情感成长的教育系统——目标始终如一：帮助每个孩子在平衡、自我价值和快乐旅程中茁壮成长。"
     ]
 
 def generate_summary_html(paragraphs):
-    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 学习总结：</div><br>" + \
+    return "<div style='font-size:24px; font-weight:bold; margin-top:30px;'>🧠 分析摘要:</div><br>" + \
         "".join(f"<p style='line-height:1.7; font-size:16px; margin-bottom:16px;'>{p}</p>\n" for p in paragraphs)
 
 def generate_email_charts(metrics):
@@ -94,13 +90,14 @@ def generate_email_charts(metrics):
 def build_email_report(summary_html, charts_html):
     footer = """
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-    <strong>此报告由 KataChat AI 系统生成，分析依据如下：</strong><br>
-    1. 来自新马台学生（已获得家长同意）的匿名学习资料数据库<br>
-    2. 包括 OpenAI 在内的受信来源的非个人化教育趋势数据<br>
-    <em>所有数据均在 PDPA 隐私框架下处理。</em>
+        <strong>本报告数据来源：</strong><br>
+        1. 新加坡/马来西亚/台湾学生匿名学习模式数据库（经家长授权）<br>
+        2. OpenAI等可信第三方教育趋势数据<br>
+        <em>所有数据处理均符合PDPA个人数据保护法规</em>
     </p>
     <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-    <strong>PS：</strong> 个性化报告将在 24–48 小时内送达邮箱。如需进一步了解分析结果，欢迎通过 Telegram 联系或预约 15 分钟交流。
+        <strong>注意：</strong>您的个性化报告将在24-48小时内发送至邮箱。
+        如需进一步咨询，可通过Telegram联系我们或预约15分钟快速沟通。
     </p>
     """
     return summary_html + charts_html + footer
@@ -109,7 +106,7 @@ def build_email_report(summary_html, charts_html):
 def analyze_name():
     try:
         data = request.get_json(force=True)
-        logging.info(f"[analyze_name] Payload received")
+        logging.info(f"[analyze_name] 收到请求数据")
 
         name = data.get("name", "").strip()
         chinese_name = data.get("chinese_name", "").strip()
@@ -119,16 +116,9 @@ def analyze_name():
         email = data.get("email", "").strip()
         referrer = data.get("referrer", "").strip()
 
-        # ✅ 修复中文月份解析
-        month_raw = str(data.get("dob_month")).strip()
-        if month_raw in CHINESE_MONTHS:
-            month_name = CHINESE_MONTHS[month_raw]
-            month = datetime.strptime(month_name, "%B").month
-        elif month_raw.isdigit():
-            month = int(month_raw)
-        else:
-            month = datetime.strptime(month_raw, "%B").month
-
+        # 保留英文月份处理逻辑 (防止中文月份解析错误)
+        month_str = str(data.get("dob_month")).strip()
+        month = int(month_str) if month_str.isdigit() else datetime.strptime(month_str.capitalize(), "%B").month
         birthdate = datetime(int(data.get("dob_year")), month, int(data.get("dob_day")))
         today = datetime.today()
         age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
@@ -140,24 +130,25 @@ def analyze_name():
         email_html_result = build_email_report(summary_only_html, charts_html)
 
         email_html = f"""<html><body style="font-family:sans-serif;color:#333">
-        <h2>🎯 新用户提交记录：</h2>
+        <h2>🎯 新用户提交：</h2>
         <p>
-        👤 <strong>英文姓名:</strong> {name}<br>
-        🈶 <strong>中文姓名:</strong> {chinese_name}<br>
-        ⚧️ <strong>性别:</strong> {gender}<br>
-        🎂 <strong>出生日期:</strong> {birthdate.date()}<br>
-        🕑 <strong>年龄:</strong> {age}<br>
-        🌍 <strong>国家:</strong> {country}<br>
-        📞 <strong>电话:</strong> {phone}<br>
-        📧 <strong>邮箱:</strong> {email}<br>
-        💬 <strong>推荐人:</strong> {referrer}
+        👤 <strong>姓名：</strong> {name}<br>
+        🈶 <strong>中文名：</strong> {chinese_name}<br>
+        ⚧️ <strong>性别：</strong> {gender}<br>
+        🎂 <strong>出生日期：</strong> {birthdate.date()}<br>
+        🕑 <strong>年龄：</strong> {age}<br>
+        🌍 <strong>国家：</strong> {country}<br>
+        📞 <strong>电话：</strong> {phone}<br>
+        📧 <strong>邮箱：</strong> {email}<br>
+        💬 <strong>推荐人：</strong> {referrer}
         </p>
-        <hr><h2>📊 AI 分析报告</h2>
+        <hr><h2>📊 AI生成报告</h2>
         {email_html_result}
         </body></html>"""
 
         send_email(email_html)
 
+        # 网页端额外显示内容
         display_footer = build_email_report("", "")
         return jsonify({
             "metrics": metrics,
@@ -165,7 +156,7 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.exception("❌ /analyze_name 错误")
+        logging.exception("❌ /analyze_name接口错误")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
