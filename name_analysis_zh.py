@@ -75,14 +75,14 @@ def generate_summary(age, gender, country, learning_styles, habits, confidence):
     return f"<p>{para1}</p><p>{para2}</p><p>{para3}</p><p>{para4}</p>"
 
 FOOTER = """
-<p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
+<p style=\"background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;\">
   <strong>本报告中的洞察由 KataChat 的 AI 系统生成，依据以下来源分析：</strong><br>
   1. 我们专属数据库中经家长同意收集的新马台儿童学习模式匿名数据<br>
   2. 来自 OpenAI 等可信来源的教育趋势汇总（不包含个人信息）<br>
   <em>所有数据在严格遵守 PDPA 的前提下，通过 AI 模型识别统计显著趋势。</em>
 </p>
-<p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
-  <strong>PS：</strong>您也将收到完整图表的邮件版本（请查收垃圾邮件箱）。如需进一步探讨结果，可 Telegram 联系我们或预约 15 分钟通话。
+<p style=\"background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;\">
+  <strong>PS：</strong>您将收到完整图表的电子邮件版本（请检查垃圾邮件箱）。如需进一步探讨结果，欢迎通过 Telegram 联系我们或预约 15 分钟通话。
 </p>
 """
 
