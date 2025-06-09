@@ -34,7 +34,7 @@ CHINESE_GENDER = {
 def send_email(html_body):
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "新的 KataChatBot 提交記錄"
+        msg['Subject'] = "新的 KataChatBot 提交记录"
         msg['From'] = SMTP_USERNAME
         msg['To'] = SMTP_USERNAME
         msg.attach(MIMEText(html_body, 'html', 'utf-8'))
@@ -42,9 +42,9 @@ def send_email(html_body):
             server.starttls()
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
-        logging.info("✅ 郵件發送成功")
+        logging.info("✅ 邮件发送成功")
     except Exception as e:
-        logging.error("❌ 郵件發送失敗: %s", str(e))
+        logging.error("❌ 邮件发送失败: %s", str(e))
 
 @app.route('/analyze_name', methods=['POST'])
 def analyze_name():
@@ -67,24 +67,24 @@ def analyze_name():
         elif dob_month in ENGLISH_MONTHS:
             month_num = ENGLISH_MONTHS[dob_month]
         else:
-            return jsonify({"error": f"❌ 無法識別的月份格式: {dob_month}"}), 400
+            return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month}"}), 400
 
         birthdate = datetime(int(dob_year), month_num, int(dob_day))
         age = datetime.now().year - birthdate.year
         gender_label = CHINESE_GENDER.get(gender, "孩子")
 
         metrics = [
-            {"title": "學習偏好", "labels": ["視覺型", "聽覺型", "動手型"], "values": [50, 35, 11]},
-            {"title": "學習投入", "labels": ["每日複習", "小組學習", "自主學習"], "values": [58, 22, 43]},
-            {"title": "學業信心", "labels": ["數學", "閱讀", "專注力"], "values": [67, 58, 58]},
+            {"title": "学习偏好", "labels": ["视觉型", "听觉型", "动手型"], "values": [50, 35, 11]},
+            {"title": "学习投入", "labels": ["每日复习", "小组学习", "自主学习"], "values": [58, 22, 43]},
+            {"title": "学习信心", "labels": ["数学", "阅读", "专注力"], "values": [67, 58, 58]},
         ]
 
-        para1 = f"在{country}，許多年約 {age} 歲的{gender_label}正在慢慢建立屬於自己的學習習慣與風格。從資料看來，視覺型學習偏好佔了 50%，說明圖片、顏色與圖像化內容對他們有明顯吸引力；聽覺型佔 35%，而動手實踐型則為 11%。這反映了此年齡段孩子在資訊吸收方式上的多元差異。"
-        para2 = "在學習投入上，有 58% 的孩子已養成每日複習的好習慣，這是一個相當正面的訊號；而 43% 偏好自主學習，顯示他們具備自我驅動的潛力；至於小組學習則較少，僅 22%，這可能暗示著人際互動方面仍在培養中。"
-        para3 = "學業信心方面，數學達到 67%，顯示他們對邏輯與計算有一定掌握；閱讀方面為 58%，略顯保守，可能與語言環境或詞彙基礎有關；而專注力則為 58%，反映孩子在持續注意力上的發展仍有提升空間。"
-        para4 = "綜合來看，這些趨勢說明孩子正處於探索與成長的交叉點，家長可以根據其偏好與特質，提供更貼近需求的支持環境與學習資源，從而協助他們更自在地發揮潛能。"
+        para1 = f"在{country}，许多年约 {age} 岁的{gender_label}正在慢慢建立属于自己的学习习惯与风格。从数据来看，视觉型学习偏好占了 50%，说明图片、颜色与图像化内容对他们有明显吸引力；听觉型占 35%，而动手实践型则为 11%。这反映了此年龄段孩子在信息吸收方式上的多样差异。"
+        para2 = "在学习投入方面，有 58% 的孩子已养成每日复习的好习惯，这是一个相当积极的信号；而 43% 偏好自主学习，显示他们具备自我驱动的潜力；至于小组学习则较少，仅 22%，这可能意味着人际互动方面仍在培养中。"
+        para3 = "在学习信心方面，数学达到 67%，显示他们对逻辑与计算有一定掌握；阅读方面为 58%，略显保守，可能与语言环境或词汇基础有关；而专注力则为 58%，反映孩子在持续注意力上的发展仍有提升空间。"
+        para4 = "综合来看，这些趋势说明孩子正处于探索与成长的交汇点，家长可以根据其偏好与特质，提供更贴近需求的支持环境与学习资源，从而协助他们更自在地发挥潜能。"
 
-        summary = f"🧠 學習總結：\n\n{para1}\n\n{para2}\n\n{para3}\n\n{para4}"
+        summary = f"🧠 学习总结：\n\n{para1}\n\n{para2}\n\n{para3}\n\n{para4}"
         formatted_summary = summary.replace('\n', '<br>')
 
         chart_blocks = ""
@@ -94,22 +94,22 @@ def analyze_name():
         html_body = f"""
         👤 姓名：{name}<br>
         🈶 中文名：{chinese_name}<br>
-        ⚧️ 性別：{gender}<br>
+        ⚧️ 性别：{gender}<br>
         🎂 生日：{dob_year}-{dob_month}-{dob_day}<br>
-        🕑 年齡：{age}<br>
-        🌍 國家：{country}<br>
-        📞 電話：{phone}<br>
-        📧 郵箱：{email}<br>
-        💬 推薦人：{referrer}<br><br>
+        🕑 年龄：{age}<br>
+        🌍 国家：{country}<br>
+        📞 电话：{phone}<br>
+        📧 邮箱：{email}<br>
+        💬 推荐人：{referrer}<br><br>
 
         📊 AI 分析：<br>{formatted_summary}<br><br>
         {chart_blocks}
 
         <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">
-        本報告由 KataChat AI 系統生成，數據來源包括：<br>
-        1. 來自新加坡、馬來西亞、台灣的匿名學習行為資料庫（已獲家長授權）<br>
-        2. OpenAI 教育研究數據與趨勢分析<br>
-        所有數據處理均符合 PDPA 資料保護規範。
+        本报告由 KataChat AI 系统生成，数据来源包括：<br>
+        1. 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
+        2. OpenAI 教育研究数据与趋势分析<br>
+        所有数据处理均符合 PDPA 数据保护规范。
         </div>
         """
 
@@ -121,8 +121,8 @@ def analyze_name():
         })
 
     except Exception as e:
-        logging.error("❌ 系統錯誤: %s", str(e))
-        return jsonify({"error": "⚠️ 系統內部錯誤，請稍後再試"}), 500
+        logging.error("❌ 系统错误: %s", str(e))
+        return jsonify({"error": "⚠️ 系统内部错误，请稍后再试"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
