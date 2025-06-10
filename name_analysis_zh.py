@@ -155,10 +155,10 @@ def analyze_name():
 
         html_body = f"""
         👤 姓名：{name}<br>
-        🄸 中文名：{chinese_name}<br>
-        ♂️ 性别：{gender}<br>
+        🈶 中文名：{chinese_name}<br>
+        ⚧️ 性别：{gender}<br>
         🎂 生日：{dob_year}-{dob_month}-{dob_day}<br>
-        🕒 年龄：{age}<br>
+        🕑 年龄：{age}<br>
         🌍 国家：{country}<br>
         📞 电话：{phone}<br>
         📧 邮箱：{email}<br>
@@ -172,7 +172,8 @@ def analyze_name():
         send_email(html_body)
 
         return jsonify({
-            "analysis": summary + footer
+            "analysis": summary + charts_html + footer,
+            "metrics": metrics
         })
 
     except Exception as e:
