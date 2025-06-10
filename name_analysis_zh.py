@@ -46,6 +46,25 @@ def send_email(html_body):
     except Exception as e:
         logging.error("❌ 邮件发送失败: %s", str(e))
 
+def generate_child_metrics_zh():
+    return [
+        {
+            "title": "学习偏好",
+            "labels": ["视觉型", "听觉型", "动手型"],
+            "values": [random.randint(50, 70), random.randint(25, 40), random.randint(10, 30)]
+        },
+        {
+            "title": "学习投入",
+            "labels": ["每日复习", "小组学习", "自主学习"],
+            "values": [random.randint(40, 60), random.randint(20, 40), random.randint(30, 50)]
+        },
+        {
+            "title": "学习信心",
+            "labels": ["数学", "阅读", "专注力"],
+            "values": [random.randint(50, 85), random.randint(40, 70), random.randint(30, 65)]
+        }
+    ]
+
 def generate_email_charts(metrics):
     def make_bar_html(title, labels, values, color):
         bar_html = f"<h3 style='color:#333; margin-top:30px;'>{title}</h3>"
@@ -92,15 +111,12 @@ def analyze_name():
             return jsonify({"error": f"❌ 无法识别的月份格式: {dob_month}"}), 400
 
         birthdate = datetime(int(dob_year), month_num, int(dob_day))
-        age = datetime.now().year - birthdate.year
+        today = datetime.today()
+        age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
         gender_label = CHINESE_GENDER.get(gender, "孩子")
 
-        metrics = [
-            {"title": "学习偏好", "labels": ["视觉型", "听觉型", "动手型"], "values": [63, 27, 12]},
-            {"title": "学习投入", "labels": ["每日复习", "小组学习", "自主学习"], "values": [58, 31, 46]},
-            {"title": "学习信心", "labels": ["数学", "阅读", "专注力"], "values": [76, 55, 48]},
-        ]
-
+        # 🎯 Generate dynamic metrics
+        metrics = generate_child_metrics_zh()
         visual, auditory, kinesthetic = metrics[0]['values']
         review, group, independent = metrics[1]['values']
         math, reading, focus = metrics[2]['values']
@@ -172,7 +188,7 @@ def analyze_name():
         send_email(html_body)
 
         return jsonify({
-            "analysis": summary + footer,  # ✅ Removed charts_html from here
+            "analysis": summary + footer,
             "metrics": metrics
         })
 
