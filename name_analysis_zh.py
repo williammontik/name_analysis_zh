@@ -46,6 +46,29 @@ def send_email(html_body):
     except Exception as e:
         logging.error("❌ 邮件发送失败: %s", str(e))
 
+def generate_email_charts(metrics):
+    def make_bar_html(title, labels, values, color):
+        bar_html = f"<h3 style='color:#333; margin-top:30px;'>{title}</h3>"
+        for label, val in zip(labels, values):
+            bar_html += f"""
+            <div style="margin:8px 0;">
+              <div style="font-size:15px; margin-bottom:4px;">{label}</div>
+              <div style="background:#eee; border-radius:10px; overflow:hidden;">
+                <div style="background:{color}; width:{val}%; padding:6px 12px; color:white; font-weight:bold;">
+                  {val}%
+                </div>
+              </div>
+            </div>
+            """
+        return bar_html
+
+    color_map = ['#5E9CA0', '#FFA500', '#9966FF']
+    charts_html = ""
+    for idx, m in enumerate(metrics):
+        color = color_map[idx % len(color_map)]
+        charts_html += make_bar_html(m["title"], m["labels"], m["values"], color)
+    return charts_html
+
 @app.route('/analyze_name', methods=['POST'])
 def analyze_name():
     try:
@@ -60,7 +83,6 @@ def analyze_name():
         email = data.get("email", "")
         country = data.get("country", "")
         referrer = data.get("referrer", "")
-        chart_images = data.get("chart_images", [])
 
         if dob_month in CHINESE_MONTHS:
             month_num = CHINESE_MONTHS[dob_month]
@@ -116,10 +138,7 @@ def analyze_name():
         )
 
         summary = f"🧠 学习总结：<br><br>{para1}<br><br>{para2}<br><br>{para3}<br><br>{para4}"
-
-        chart_blocks = ""
-        for img in chart_images:
-            chart_blocks += f'<img src="data:image/png;base64,{img}" style="width:100%; max-width:480px; margin-top:20px;"><br>'
+        charts_html = generate_email_charts(metrics)
 
         footer = """
         <p style="background-color:#e6f7ff; color:#00529B; padding:15px; border-left:4px solid #00529B; margin:20px 0;">
@@ -146,14 +165,14 @@ def analyze_name():
         💬 推荐人：{referrer}<br><br>
 
         📊 AI 分析：<br>{summary}<br><br>
-        {chart_blocks}
+        {charts_html}
         {footer}
         """
 
         send_email(html_body)
 
         return jsonify({
-            "analysis": summary + footer,
+            "analysis": summary + charts_html + footer,
             "metrics": metrics
         })
 
