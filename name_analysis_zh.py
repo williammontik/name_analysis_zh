@@ -172,7 +172,7 @@ def analyze_name():
         send_email(html_body)
 
         return jsonify({
-            "analysis": summary + charts_html + footer,
+            "analysis": summary + footer,  # ✅ Removed charts_html from here
             "metrics": metrics
         })
 
