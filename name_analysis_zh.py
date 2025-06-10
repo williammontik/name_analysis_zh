@@ -123,7 +123,7 @@ def analyze_name():
         send_email(html_body)
 
         return jsonify({
-            "analysis": summary + "\n\n" + "（请查收邮件获取完整报告）",
+            "analysis": formatted_summary + footer,
             "metrics": metrics
         })
 
