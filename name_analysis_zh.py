@@ -91,6 +91,19 @@ def analyze_name():
         for img in chart_images:
             chart_blocks += f'<img src="data:image/png;base64,{img}" style="width:100%; max-width:480px; margin-top:20px;"><br>'
 
+        footer = """
+        <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">
+        <strong>本报告的洞察由 KataChat AI 系统生成，分析基础如下：</strong><br>
+        1. 来自新加坡、马来西亚、台湾的匿名儿童学习行为数据库（已获家长授权）<br>
+        2. 来自 OpenAI 教育研究数据与趋势的非个人化分析<br>
+        <em>所有数据处理均通过本系统的 AI 模型执行，并严格遵守 PDPA 数据保护规范。</em>
+        </div>
+        <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0; margin-top:10px;">
+        <strong>附言：</strong>您将在 24-48 小时内收到完整的个性化报告邮件。<br>
+        如希望进一步了解分析结果，欢迎通过 Telegram 联系我们或预约 15 分钟简聊。
+        </div>
+        """
+
         html_body = f"""
         👤 姓名：{name}<br>
         🈶 中文名：{chinese_name}<br>
@@ -104,19 +117,13 @@ def analyze_name():
 
         📊 AI 分析：<br>{formatted_summary}<br><br>
         {chart_blocks}
-
-        <div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">
-        本报告由 KataChat AI 系统生成，数据来源包括：<br>
-        1. 来自新加坡、马来西亚、台湾的匿名学习行为数据库（已获家长授权）<br>
-        2. OpenAI 教育研究数据与趋势分析<br>
-        所有数据处理均符合 PDPA 数据保护规范。
-        </div>
+        {footer}
         """
 
         send_email(html_body)
 
         return jsonify({
-            "analysis": summary,
+            "analysis": summary + "\n\n" + footer.replace('<br>', '\n').replace('<div style="background:#eef; padding:15px; border-left:6px solid #5E9CA0;">', '').replace('</div>', ''),
             "metrics": metrics
         })
 
